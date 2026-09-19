@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NikRises — System</title>
+<style>
+:root{--bg:#0a0a0f;--s:#111118;--c:#16161e;--b:#252530;--g:#39ff14;--gd:rgba(57,255,20,0.1);--gg:rgba(57,255,20,0.35);--w:#efefef;--m:#555;--r:#ff3c3c;--y:#ffd600;--crimson:#8b0000;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-height:100vh;padding:18px 14px 100px;max-width:480px;margin:0 auto;}
+.green{color:var(--g);}.red{color:var(--r);}.yellow{color:var(--y);}
+.muted{color:var(--m);font-family:monospace;font-size:10px;letter-spacing:1px;}
+.surface{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.seclbl{font-family:monospace;font-size:9px;letter-spacing:2.5px;color:var(--m);text-transform:uppercase;margin:14px 0 8px 2px;}
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:8px 13px;background:var(--s);border:1px solid var(--b);border-radius:8px;color:var(--m);font-family:monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
+.tab.active{background:var(--gd);border-color:rgba(57,255,20,0.3);color:var(--g);}
+.panel{display:none;}.panel.active{display:block;}
+.bar-bg{height:6px;background:var(--b);border-radius:99px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:99px;transition:width 0.5s;}
+.hrow{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:12px;padding:13px 14px;margin-bottom:8px;cursor:pointer;user-select:none;}
+.hrow.done{background:rgba(57,255,20,0.04);border-color:rgba(57,255,20,0.2);}
+.chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--b);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;}
+.hrow.done .chk{background:var(--g);border-color:var(--g);color:#000;box-shadow:0 0 10px var(--gg);}
+.htxt{flex:1;font-size:14px;font-weight:600;}
+.hrow.done .htxt{color:rgba(240,240,240,0.3);text-decoration:line-through;text-decoration-color:var(--g);}
+.badge{font-family:monospace;font-size:9px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:6px;padding:2px 6px;flex-shrink:0;}
+.rank-hero{background:var(--s);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;}
+.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--c);border-radius:20px;padding:20px 28px;text-align:center;z-index:200;display:none;min-width:180px;}
+.popup.show{display:block;}
+.levelup{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.levelup.show{display:flex;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.show{display:flex;}
+.obox{background:var(--c);border:1px solid var(--b);border-radius:18px;padding:24px 20px;width:100%;max-width:350px;text-align:center;max-height:90vh;overflow-y:auto;}
+.btn{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;width:100%;font-family:system-ui,sans-serif;border:none;margin-top:8px;}
+.btn-g{background:rgba(57,255,20,0.12);border:1px solid rgba(57,255,20,0.3)!important;color:var(--g);}
+.btn-r{background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3)!important;color:var(--r);}
+.btn-y{background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3)!important;color:var(--y);}
+.btn-save{background:rgba(57,255,20,0.15);border:1px solid rgba(57,255,20,0.4)!important;color:var(--g);font-size:14px;}
+.btn-boss{background:rgba(255,60,60,0.16);border:1px solid rgba(255,60,60,0.4)!important;color:var(--r);font-family:monospace;font-size:10px;letter-spacing:1px;padding:7px 10px;border-radius:8px;cursor:pointer;}
+.todo-row{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:12px;padding:13px 14px;margin-bottom:8px;}
+.todo-row.done-t{background:rgba(57,255,20,0.04);border-color:rgba(57,255,20,0.2);}
+.del-btn{background:none;border:none;color:var(--m);font-size:16px;cursor:pointer;padding:2px 4px;}
+.inp{flex:1;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 14px;color:var(--w);font-family:system-ui,sans-serif;font-size:13px;outline:none;}
+.inp:focus{border-color:rgba(57,255,20,0.3);}
+.add-btn{background:var(--g);border:none;border-radius:10px;width:44px;height:44px;font-size:22px;font-weight:700;color:#000;cursor:pointer;flex-shrink:0;}
+.rank-row{border-radius:12px;padding:14px 16px;margin-bottom:8px;border:1px solid var(--b);}
+.pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;font-family:monospace;margin-right:4px;margin-bottom:4px;display:inline-block;}
+.pill.ok{background:rgba(57,255,20,0.1);color:var(--g);border:1px solid rgba(57,255,20,0.2);}
+.pill.no{background:rgba(255,60,60,0.07);color:var(--r);border:1px solid rgba(255,60,60,0.18);}
+.pmo-btn{display:flex;flex-direction:column;align-items:center;background:var(--s);border:1.5px solid var(--b);border-radius:14px;padding:8px 12px;cursor:pointer;min-width:64px;}
+.note-ta{width:100%;background:var(--c);border:1px solid var(--b);border-radius:12px;padding:14px 16px;color:var(--w);font-family:system-ui,sans-serif;font-size:13px;resize:none;min-height:70px;outline:none;line-height:1.5;}
+.note-ta:focus{border-color:rgba(57,255,20,0.3);}
+.sbar-bg{flex:1;height:5px;background:var(--b);border-radius:99px;overflow:hidden;}
+.sbar-fill{height:100%;border-radius:99px;}
+.danger-banner{background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.35);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:none;align-items:center;gap:10px;}
+.trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer;}
+.trial-q.selected{border-color:var(--g);background:rgba(57,255,20,0.08);}
+</style>
+</head>
+<body>
+
+<!-- EXP POPUP -->
+<div class="popup" id="popup">
+  <div id="popNum" style="font-size:52px;font-weight:900;line-height:1;">+100</div>
+  <div id="popLbl" style="font-family:monospace;font-size:10px;color:var(--m);letter-spacing:2px;margin-top:4px;">EXP</div>
+</div>
+
+<!-- LEVEL UP -->
+<div class="levelup" id="levelup">
+  <div id="luRank" style="font-size:100px;font-weight:900;line-height:1;">C</div>
+  <div style="font-size:28px;font-weight:900;color:var(--w);letter-spacing:3px;margin-top:8px;">RANK UP!</div>
+  <div id="luName" style="font-family:monospace;font-size:14px;letter-spacing:2px;margin-top:6px;"></div>
+  <button onclick="document.getElementById('levelup').classList.remove('show')" id="luBtn" style="margin-top:24px;border:none;border-radius:12px;padding:14px 32px;font-size:18px;letter-spacing:2px;color:#000;cursor:pointer;font-weight:900;">ARISE ⚔️</button>
+</div>
+
+<!-- DANGER ZONE NIGHT WINDOW -->
+<div class="danger-banner" id="dangerBanner">
+  <div style="font-size:20px;">👁️</div>
+  <div style="flex:1;">
+    <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1px;font-family:monospace;">HIGH-THREAT WINDOW ACTIVE</div>
+    <div style="font-size:11px;color:var(--w);opacity:0.8;">Late night detected. Phone away from bed. Defend your mind.</div>
+  </div>
+</div>
+
+<!-- EMERGENCY URGE PROTOCOL OVERLAY -->
+<div class="overlay" id="urgeOverlay">
+  <div class="obox" style="border-color:var(--r);">
+    <div style="font-size:20px;color:var(--r);font-weight:900;letter-spacing:1.5px;">⚔️ URGE BOSS FIGHT</div>
+    <div class="muted" style="color:var(--r);margin:4px 0 14px;">180-SECOND DOPAMINE RE-ENGAGE</div>
+    <div id="urgeTimer" style="font-size:56px;font-weight:900;color:var(--w);font-family:monospace;margin-bottom:8px;">03:00</div>
+    <div id="urgeTask" style="background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px;font-size:14px;font-weight:700;color:var(--y);line-height:1.4;margin-bottom:14px;"></div>
+    <button class="btn btn-g" id="claimUrgeBtn" onclick="claimUrgeDefeat()" style="display:none;">✓ Boss Defeated (+150 EXP)</button>
+    <button class="btn btn-r" onclick="abortUrgeProtocol()" style="margin-top:8px;">Retreat</button>
+  </div>
+</div>
+
+<!-- PMO RELAPSE WITH TRIGGER LOGGING -->
+<div class="overlay" id="pmoOverlay">
+  <div class="obox">
+    <div style="font-size:22px;color:var(--r);font-weight:900;margin-bottom:8px;">Reset Streak?</div>
+    <p id="pmoConfirmText" style="font-size:12px;color:var(--m);margin-bottom:14px;line-height:1.4;"></p>
+    <div class="seclbl" style="text-align:left;">Trigger Analysis</div>
+    <select id="pmoTrigger" class="inp" style="width:100%;margin-bottom:14px;padding:10px;">
+      <option value="Late Night Phone">Late Night Phone</option>
+      <option value="Boredom / Aimless Scrolling">Boredom / Aimless Scrolling</option>
+      <option value="High Stress / Anxiety">High Stress / Anxiety</option>
+      <option value="Being Alone in Room">Being Alone in Room</option>
+      <option value="Fantasy / Peeking">Fantasy / Peeking</option>
+    </select>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('pmoOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:13px;font-weight:700;">Cancel</button>
+      <button onclick="confirmRelapse()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--r);color:#fff;cursor:pointer;font-size:13px;font-weight:700;">Confirm Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY SYSTEM QUEST CONFIRM -->
+<div class="overlay" id="dqConfirmOverlay">
+  <div class="obox">
+    <div style="font-size:22px;color:var(--y);font-weight:900;margin-bottom:8px;">⚡ Quest Complete?</div>
+    <p style="font-size:13px;color:var(--m);margin-bottom:20px;line-height:1.5;">Did you finish today's system mission? Hunter's honor only! 💪</p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('dqConfirmOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:14px;font-weight:700;">Not yet</button>
+      <button onclick="confirmDqComplete()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--y);color:#000;cursor:pointer;font-size:14px;font-weight:700;">Yes done ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- END-OF-DAY HUNTER TRIAL OVERLAY -->
+<div class="overlay" id="trialOverlay">
+  <div class="obox" style="border-color:var(--g);">
+    <div style="font-size:20px;color:var(--g);font-weight:900;letter-spacing:2px;">AWAKENED TRIAL</div>
+    <div class="muted" style="margin:4px 0 14px;">NIGHT SELF-EVALUATION & REWARD</div>
+    
+    <div class="trial-q" id="tq1" onclick="toggleTrialQ(1)">
+      <div style="font-size:12px;font-weight:700;">1. Did you control your impulses today?</div>
+      <div class="muted" style="margin-top:2px;">Zero deliberate lust peeking or shortcuts</div>
+    </div>
+    <div class="trial-q" id="tq2" onclick="toggleTrialQ(2)">
+      <div style="font-size:12px;font-weight:700;">2. Did you give genuine effort in work/fitness?</div>
+      <div class="muted" style="margin-top:2px;">No half-hearted execution</div>
+    </div>
+    <div class="trial-q" id="tq3" onclick="toggleTrialQ(3)">
+      <div style="font-size:12px;font-weight:700;">3. Are you ending this day with zero regrets?</div>
+      <div class="muted" style="margin-top:2px;">Honest assessment before sleep</div>
+    </div>
+
+    <div id="trialRewardBox" style="display:none;background:rgba(57,255,20,0.08);border:1px dashed var(--g);border-radius:10px;padding:12px;margin:12px 0;text-align:center;">
+      <div style="font-size:11px;font-weight:800;color:var(--g);letter-spacing:1px;font-family:monospace;">HUNTER REWARD UNLOCKED</div>
+      <div id="rewardText" style="font-size:13px;font-weight:700;margin-top:4px;color:var(--w);"></div>
+    </div>
+
+    <button class="btn btn-save" onclick="finalizeTrialAndSave()">Confirm Day Completion (+250 Trial EXP)</button>
+    <button class="btn btn-r" onclick="document.getElementById('trialOverlay').classList.remove('show')" style="margin-top:6px;">Close</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="font-size:36px;font-weight:900;letter-spacing:2px;line-height:1;">NIK<span class="green">RISES</span></div>
+      <button class="btn-boss" onclick="triggerUrgeProtocol()">⚔️ Urge Protocol</button>
+    </div>
+    <div class="muted" style="margin-top:2px;">⚡ Solo Leveling Discipline Engine</div>
+  </div>
+  <div class="pmo-btn" onclick="addPmoDay()">
+    <div id="pmoDays" style="font-size:26px;color:var(--g);font-weight:900;line-height:1;">0</div>
+    <div style="font-family:monospace;font-size:7px;color:var(--m);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">PMO Free</div>
+    <div style="font-size:9px;color:var(--g);font-family:monospace;margin-top:3px;opacity:0.7;">+ Day</div>
+  </div>
+</div>
+
+<!-- RANK HERO -->
+<div class="rank-hero" id="rankHero">
+  <div id="rankGlow" style="position:absolute;inset:0;pointer-events:none;"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div id="rankBadge" style="font-size:56px;font-weight:900;line-height:1;">C</div>
+    <div style="text-align:right;">
+      <div id="rankName" style="font-size:18px;font-weight:700;color:var(--w);">Silver Hunter</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:2px;justify-content:flex-end;">
+        <div class="muted">HUNTER RANK</div>
+        <div id="levelDisp" style="font-family:monospace;font-size:10px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:6px;padding:2px 7px;">LVL 10</div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+    <span class="muted">EXP Progress</span>
+    <span id="expFraction" style="font-family:monospace;font-size:11px;color:var(--w);font-weight:700;">2,000 / 17,000</span>
+  </div>
+  <div class="bar-bg"><div id="expBar" class="bar-fill" style="width:11.7%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
+  <div style="display:flex;justify-content:space-between;margin-top:12px;">
+    <div style="text-align:center;"><div id="totalExpDisp" style="font-size:18px;font-weight:900;color:var(--g);">10,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Total EXP</div></div>
+    <div style="text-align:center;"><div id="toNextDisp" style="font-size:18px;font-weight:900;color:var(--w);">15,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">To Next</div></div>
+    <div style="text-align:center;"><div id="penaltiesDisp" style="font-size:18px;font-weight:900;color:var(--r);">0</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Relapses</div></div>
+  </div>
+</div>
+
+<!-- DATE BAR -->
+<div style="background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;margin-bottom:12px;">
+  <span id="dateDisp" style="font-family:monospace;font-size:11px;color:var(--g);letter-spacing:1px;"></span>
+  <span id="timerDisp" class="muted">00:00:00</span>
+</div>
+
+<!-- PROGRESS -->
+<div style="margin-bottom:14px;">
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+    <span style="font-size:10px;font-weight:700;color:var(--m);letter-spacing:2px;text-transform:uppercase;">Today's Progress</span>
+    <span id="progressTxt" style="font-size:20px;font-weight:900;color:var(--g);">0/7</span>
+  </div>
+  <div class="bar-bg"><div id="progressBar" class="bar-fill" style="width:0%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('today',this)">Today</button>
+  <button class="tab" onclick="switchTab('quests',this)">Quests</button>
+  <button class="tab" onclick="switchTab('ranks',this)">Ranks</button>
+  <button class="tab" onclick="switchTab('struggles',this)">Struggles</button>
+  <button class="tab" onclick="switchTab('history',this)">History</button>
+  <button class="tab" onclick="switchTab('pmo',this)">PMO</button>
+</div>
+
+<!-- TODAY -->
+<div class="panel active" id="panel-today">
+  <div id="habitsList"></div>
+  <div class="seclbl">Quick Note</div>
+  <textarea class="note-ta" id="noteBox" placeholder="Anything on your mind today..." oninput="saveNote()"></textarea>
+  <button class="btn btn-save" style="margin-top:10px;" id="saveDayBtn" onclick="openHunterTrial()">⚔️ Take Hunter Trial & Save Day</button>
+</div>
+
+<!-- QUESTS -->
+<div class="panel" id="panel-quests">
+  <div id="dailyQuestBox"></div>
+  <div class="seclbl">Your Quests (+50 EXP each)</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="inp" id="todoInput" placeholder="Add a quest for today..." maxlength="80" onkeydown="if(event.key==='Enter')addTodo()">
+    <button class="add-btn" onclick="addTodo()">+</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <span class="muted" id="todoCount">0 quests</span>
+    <button onclick="clearDone()" style="font-family:monospace;font-size:9px;color:var(--m);background:none;border:1px solid var(--b);border-radius:6px;padding:4px 10px;cursor:pointer;">Clear done</button>
+  </div>
+  <div id="todoList"></div>
+</div>
+
+<!-- RANKS -->
+<div class="panel" id="panel-ranks">
+  <div class="seclbl">All Ranks</div>
+  <div id="ranksList"></div>
+  <div class="surface" style="margin-top:6px;">
+    <div class="seclbl" style="margin-top:0;">EXP Guide</div>
+    <div id="expGuide"></div>
+  </div>
+</div>
+
+<!-- STRUGGLES -->
+<div class="panel" id="panel-struggles">
+  <div class="seclbl">Habit Completion Rate</div>
+  <div class="muted" style="margin-bottom:14px;">Based on saved history • Worst habits first</div>
+  <div id="struggleList"></div>
+  <div id="pmoTriggerHistory"></div>
+  <div id="overallStats"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="panel" id="panel-history">
+  <div class="seclbl">Past Days</div>
+  <div id="historyList"></div>
+</div>
+
+<!-- PMO -->
+<div class="panel" id="panel-pmo">
+  <div class="surface" style="text-align:center;">
+    <div id="pmoDisplay" style="font-size:64px;font-weight:900;color:var(--g);text-shadow:0 0 20px var(--gg);line-height:1;">0</div>
+    <div class="muted" style="margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;">Days PMO Free</div>
+    <div id="hunterPmoTitle" style="font-family:monospace;font-size:12px;color:var(--y);margin-top:6px;letter-spacing:1px;font-weight:700;">UNINITIATED</div>
+    <div style="display:flex;justify-content:center;gap:30px;margin-top:14px;">
+      <div style="text-align:center;"><div id="pmoBest" style="font-size:22px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Best Streak</div></div>
+      <div style="text-align:center;"><div id="pmoResets" style="font-size:22px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Total Resets</div></div>
+    </div>
+    <button class="btn btn-g" onclick="addPmoDay()" style="margin-top:14px;">+ Add Clean Day (+100 to +500 EXP)</button>
+    <button class="btn btn-boss" onclick="triggerUrgeProtocol()" style="margin-top:8px;width:100%;padding:12px;">🚨 Activate 3-Min Urge Killer</button>
+    <button class="btn btn-r" onclick="showPmoConfirm()">⚠ I relapsed — reset streak</button>
+  </div>
+
+  <div class="seclbl">PMO Reboot Milestones</div>
+  <div id="pmoMilestoneList"></div>
+
+  <div class="muted" style="text-align:center;line-height:1.8;margin-top:14px;padding:0 10px;">
+    Every clean day rewires dopamine receptors.<br>
+    Day 1-5 = <span class="green">+100 EXP</span> • Day 6-10 = <span class="green">+200 EXP</span><br>
+    Day 11-15 = <span class="green">+300 EXP</span> • Day 16-20 = <span class="green">+400 EXP</span><br>
+    Day 21+ = <span class="green">+500 EXP</span> per day<br>
+    Under 5 days → relapse = <span class="red">-1100 EXP</span> • 5+ days = <span class="yellow">-200 EXP</span>
+  </div>
+</div>
+
+<script>
+const HABITS=[
+  {id:"affirmAM",text:"🌅 Morning affirmations + visualization"},
+  {id:"meditation",text:"🧘 Morning meditation"},
+  {id:"workout",text:"🏋️ Workout + Boxing done"},
+  {id:"reading",text:"📖 Daily reading done"},
+  {id:"talk",text:"💬 Real human interaction"},
+  {id:"income",text:"💰 One income / content action"},
+  {id:"affirmPM",text:"🌙 Night affirmations + visualization"},
+];
+const RANKS=[
+  {rank:"E",name:"Iron Hunter",color:"#888",bg:"rgba(136,136,136,0.08)",min:0,max:2000},
+  {rank:"D",name:"Bronze Hunter",color:"#4fc3f7",bg:"rgba(79,195,247,0.08)",min:2000,max:8000},
+  {rank:"C",name:"Silver Hunter",color:"#39ff14",bg:"rgba(57,255,20,0.08)",min:8000,max:25000},
+  {rank:"B",name:"Gold Hunter",color:"#ff9800",bg:"rgba(255,152,0,0.08)",min:25000,max:60000},
+  {rank:"A",name:"Shadow Monarch",color:"#b388ff",bg:"rgba(179,136,255,0.08)",min:60000,max:120000},
+  {rank:"S",name:"S-Rank Hunter",color:"#ffd600",bg:"rgba(255,214,0,0.08)",min:120000,max:250000},
+  {rank:"SS",name:"Absolute",color:"#ff6ec7",bg:"rgba(255,110,199,0.08)",min:250000,max:500000},
+  {rank:"SSS",name:"The Awakened One",color:"#ff3c3c",bg:"rgba(255,60,60,0.08)",min:500000,max:999999},
+];
+const DAILY_QUESTS=[
+  {task:"Film and upload 1 Instagram Reel today",exp:150},
+  {task:"Write and upload 1 Pocket FM episode",exp:150},
+  {task:"Write 3 Quora answers today",exp:120},
+  {task:"Write 1 new chapter for your next ebook",exp:150},
+  {task:"Research 5 trending topics for content",exp:80},
+  {task:"Reply to every comment on your last reel",exp:70},
+  {task:"Plan next 7 days of content in detail",exp:100},
+  {task:"Write scripts for your next 3 reels",exp:120},
+  {task:"Create or update a Gumroad product",exp:130},
+  {task:"Spend 1 hour studying your analytics",exp:90},
+  {task:"Find and apply to 1 new affiliate program",exp:100},
+  {task:"Add 5 new pins to Pinterest today",exp:70},
+  {task:"Do 100 extra pushups on top of workout",exp:80},
+  {task:"Train boxing for 30 extra minutes",exp:80},
+  {task:"Go for a 5KM walk or run outside",exp:90},
+  {task:"10 minute cold shower today",exp:70},
+  {task:"Sleep before 11PM tonight",exp:60},
+  {task:"Eat clean all day zero junk food",exp:70},
+  {task:"Drink 3 litres of water today",exp:50},
+  {task:"Do 200 squats throughout the day",exp:70},
+  {task:"Meditate for 20 extra minutes",exp:60},
+  {task:"Write in a journal for 15 minutes",exp:50},
+  {task:"Practice English speaking for 30 minutes",exp:70},
+  {task:"Watch 1 educational video and take notes",exp:60},
+  {task:"Write your top 3 goals and why they matter",exp:50},
+  {task:"Full digital detox for 2 hours",exp:80},
+  {task:"Call or meet someone who inspires you",exp:70},
+  {task:"Read 1 chapter of a business book",exp:70},
+  {task:"Review your weekly progress deeply",exp:100},
+];
+const URGE_TASKS=[
+  "Drop down and perform 35 Pushups non-stop. Go!",
+  "Hold a wall sit until your quads shake. Don't look at screen.",
+  "Run to bathroom and splash freezing cold water on your eyes and face 5 times.",
+  "Do 50 Jumping Jacks + 30 Squats immediately.",
+  "Put phone face down, walk into another room and drink a tall glass of cold water."
+];
+const REWARDS=[
+  "30 minutes of guilt-free gaming / favorite anime episode",
+  "Buy yourself your favorite cheat snack or protein treat tomorrow",
+  "1 hour guilt-free deep dive into an interesting documentary/podcast",
+  "Listen to favorite music album with zero work distractions",
+  "Sleep in 30 minutes extra guilt-free"
+];
+const EXP_GUIDE=[
+  ["Habit completed","#39ff14","+100"],
+  ["Perfect day (7/7)","#39ff14","+200 bonus"],
+  ["Urge protocol survived","#39ff14","+150 bonus"],
+  ["Hunter trial passed","#39ff14","+250 bonus"],
+  ["System quest","#ffd600","up to +150"],
+  ["Custom quest","#39ff14","+50"],
+  ["PMO clean day","#39ff14","+100 to +500"],
+  ["PMO relapse under 5d","#ff3c3c","-1100"],
+  ["PMO relapse 5d+","#ff3c3c","-200"]
+];
+
+const KEY='nikrises_clean_v3';
+
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+function save(d){
+  try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}
+}
+function todayKey(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function getRank(exp){
+  for(let i=RANKS.length-1;i>=0;i--){
+    if(exp>=RANKS[i].min)return RANKS[i];
+  }
+  return RANKS[0];
+}
+function getDQ(){
+  const seed=todayKey().split('-').reduce((a,b)=>a+parseInt(b),0);
+  return DAILY_QUESTS[seed%DAILY_QUESTS.length];
+}
+function fmtDate(){
+  var n=new Date(),days=["SUN","MON","TUE","WED","THU","FRI","SAT"],months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  return days[n.getDay()]+' '+n.getDate()+' '+months[n.getMonth()]+' '+n.getFullYear();
+}
+function num(n){return Number(n||0).toLocaleString();}
+
+// INITIALIZE STATE
+var store=load();
+if(!store){
+  store={
+    totalExp:10000,
+    penalties:0,
+    pmo:{days:0,best:3,resets:0,triggers:[]},
+    today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false},
+    history:[]
+  };
+  save(store);
+}
+if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=10000;
+if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
+if(!store.pmo.triggers)store.pmo.triggers=[];
+if(!store.penalties)store.penalties=0;
+if(!store.history)store.history=[];
+if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
+if(!store.today.checked)store.today.checked={};
+if(!store.today.todos)store.today.todos=[];
+
+function checkDateRollover(){
+  var curDate=todayKey();
+  if(store.today.date!==curDate){
+    store.today={date:curDate,checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
+    save(store);
+  }
+}
+checkDateRollover();
+
+// NIGHT DANGER ZONE CHECK (11 PM - 4 AM)
+function checkDangerZone(){
+  var h=new Date().getHours();
+  var b=document.getElementById('dangerBanner');
+  if(h>=23||h<4){
+    b.style.display='flex';
+  }else{
+    b.style.display='none';
+  }
+}
+
+// POPUP NOTIFICATIONS
+var popTimer=null;
+function showPop(amt,lbl){
+  var p=document.getElementById('popup');
+  var n=document.getElementById('popNum');
+  var l=document.getElementById('popLbl');
+  n.textContent=(amt>0?'+':'')+amt;
+  n.style.color=amt>0?'#39ff14':'#ff3c3c';
+  l.textContent=lbl;
+  p.style.border='2px solid '+(amt>0?'#39ff14':'#ff3c3c');
+  p.style.boxShadow='0 0 40px '+(amt>0?'rgba(57,255,20,0.3)':'rgba(255,60,60,0.3)');
+  p.classList.add('show');
+  if(popTimer)clearTimeout(popTimer);
+  popTimer=setTimeout(()=>{p.classList.remove('show');},1800);
+}
+
+function applyExp(amt,lbl){
+  var prevRank=getRank(store.totalExp).rank;
+  store.totalExp=Math.max(0,(store.totalExp||0)+amt);
+  var newRank=getRank(store.totalExp);
+  showPop(amt,lbl);
+  if(newRank.rank!==prevRank&&amt>0){
+    setTimeout(()=>{
+      document.getElementById('luRank').textContent=newRank.rank;
+      document.getElementById('luRank').style.color=newRank.color;
+      document.getElementById('luRank').style.textShadow='0 0 40px '+newRank.color;
+      document.getElementById('luName').textContent=newRank.name;
+      document.getElementById('luName').style.color=newRank.color;
+      document.getElementById('luBtn').style.background=newRank.color;
+      document.getElementById('levelup').classList.add('show');
+    },400);
+  }
+  save(store);
+  renderRankHero();
+}
+
+function renderRankHero(){
+  var r=getRank(store.totalExp);
+  var inRank=store.totalExp-r.min;
+  var needed=r.max-r.min;
+  var pct=Math.min(100,(inRank/needed)*100);
+  document.getElementById('rankBadge').textContent=r.rank;
+  document.getElementById('rankBadge').style.color=r.color;
+  document.getElementById('rankBadge').style.textShadow='0 0 30px '+r.color;
+  document.getElementById('rankName').textContent=r.name;
+  document.getElementById('levelDisp').textContent='LVL '+Math.floor(store.totalExp/1000);
+  document.getElementById('rankHero').style.borderColor=r.color+'40';
+  document.getElementById('rankHero').style.border='1px solid '+r.color+'40';
+  document.getElementById('rankGlow').style.background='radial-gradient(ellipse at top left,'+r.bg+' 0%,transparent 60%)';
+  document.getElementById('expBar').style.width=pct+'%';
+  document.getElementById('expBar').style.background=r.color;
+  document.getElementById('expBar').style.boxShadow='0 0 8px '+r.color+'80';
+  document.getElementById('expFraction').textContent=num(inRank)+' / '+num(needed);
+  document.getElementById('totalExpDisp').textContent=num(store.totalExp);
+  document.getElementById('totalExpDisp').style.color=r.color;
+  document.getElementById('toNextDisp').textContent=num(r.max-store.totalExp);
+  document.getElementById('penaltiesDisp').textContent=store.pmo.resets||0;
+}
+
+function renderHabits(){
+  var list=document.getElementById('habitsList');
+  list.innerHTML='';
+  var done=0;
+  var checkedMap=store.today.checked||{};
+  HABITS.forEach(h=>{
+    var isDone=!!checkedMap[h.id];
+    if(isDone)done++;
+    var row=document.createElement('div');
+    row.className='hrow'+(isDone?' done':'');
+    row.innerHTML='<div class="chk">'+(isDone?'✓':'')+'</div><div class="htxt">'+h.text+'</div><div class="badge">+100</div>';
+    row.onclick=()=>toggleHabit(h.id);
+    list.appendChild(row);
+  });
+  document.getElementById('progressTxt').textContent=done+'/'+HABITS.length;
+  document.getElementById('progressBar').style.width=(done/HABITS.length*100)+'%';
+}
+
+function toggleHabit(id){
+  if(!store.today.checked)store.today.checked={};
+  var was=!!store.today.checked[id];
+  store.today.checked[id]=!was;
+  applyExp(was?-100:100,was?'Habit unticked -100 EXP':'Habit done! +100 EXP');
+  renderHabits();
+  save(store);
+}
+
+function saveNote(){
+  store.today.note=document.getElementById('noteBox').value;
+  save(store);
+}
+
+// URGE INTERRUPT PROTOCOL
+var urgeInt=null;
+var urgeSeconds=180;
+function triggerUrgeProtocol(){
+  urgeSeconds=180;
+  var task=URGE_TASKS[Math.floor(Math.random()*URGE_TASKS.length)];
+  document.getElementById('urgeTask').textContent=task;
+  document.getElementById('claimUrgeBtn').style.display='none';
+  document.getElementById('urgeOverlay').classList.add('show');
+  clearInterval(urgeInt);
+  updateUrgeDisplay();
+  urgeInt=setInterval(()=>{
+    urgeSeconds--;
+    updateUrgeDisplay();
+    if(urgeSeconds<=0){
+      clearInterval(urgeInt);
+      document.getElementById('claimUrgeBtn').style.display='block';
+    }
+  },1000);
+}
+function updateUrgeDisplay(){
+  var m=Math.floor(urgeSeconds/60);
+  var s=urgeSeconds%60;
+  document.getElementById('urgeTimer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function abortUrgeProtocol(){
+  clearInterval(urgeInt);
+  document.getElementById('urgeOverlay').classList.remove('show');
+}
+function claimUrgeDefeat(){
+  clearInterval(urgeInt);
+  document.getElementById('urgeOverlay').classList.remove('show');
+  applyExp(150,'Urge Slain! +150 EXP 🔥');
+}
+
+// END OF DAY TRIAL & REWARDS
+var trialAnswers={1:false,2:false,3:false};
+function openHunterTrial(){
+  trialAnswers={1:false,2:false,3:false};
+  [1,2,3].forEach(i=>document.getElementById('tq'+i).classList.remove('selected'));
+  document.getElementById('trialRewardBox').style.display='none';
+  document.getElementById('trialOverlay').classList.add('show');
+}
+function toggleTrialQ(id){
+  trialAnswers[id]=!trialAnswers[id];
+  var el=document.getElementById('tq'+id);
+  if(trialAnswers[id])el.classList.add('selected');
+  else el.classList.remove('selected');
+
+  if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]){
+    var r=REWARDS[Math.floor(Math.random()*REWARDS.length)];
+    document.getElementById('rewardText').textContent=r;
+    document.getElementById('trialRewardBox').style.display='block';
+  }else{
+    document.getElementById('trialRewardBox').style.display='none';
+  }
+}
+function finalizeTrialAndSave(){
+  var checkedMap=store.today.checked||{};
+  var doneCount=HABITS.filter(h=>!!checkedMap[h.id]).length;
+  
+  if(doneCount===HABITS.length&&!store.today.perfectAwarded){
+    store.today.perfectAwarded=true;
+    applyExp(200,'Perfect Day! +200 EXP Bonus 🔥');
+  }
+
+  // Bonus for passing all 3 self-evaluations
+  if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]&&!store.today.trialAwarded){
+    store.today.trialAwarded=true;
+    applyExp(250,'Trial Mastered! +250 EXP ⚔️');
+  }
+
+  store.today.isSaved=true;
+  store.today.note=document.getElementById('noteBox').value;
+
+  var idx=store.history.findIndex(h=>h.date===store.today.date);
+  if(idx>=0)store.history[idx]=JSON.parse(JSON.stringify(store.today));
+  else store.history.unshift(JSON.parse(JSON.stringify(store.today)));
+
+  save(store);
+  document.getElementById('trialOverlay').classList.remove('show');
+
+  var btn=document.getElementById('saveDayBtn');
+  btn.textContent='✓ Day & Trial Saved!';
+  btn.style.borderColor='#39ff14';
+  setTimeout(()=>{btn.textContent='⚔️ Take Hunter Trial & Save Day';},2500);
+
+  renderHistory();
+  renderStruggles();
+}
+
+// DAILY QUESTS & TODOS
+function renderDailyQuest(){
+  var q=getDQ();
+  var done=!!store.today.dailyQuestDone;
+  document.getElementById('dailyQuestBox').innerHTML=
+    '<div style="background:rgba(255,214,0,0.05);border:1px solid rgba(255,214,0,0.2);border-radius:14px;padding:16px;margin-bottom:14px;">'+
+    '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">'+
+    '<span style="font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--y);text-transform:uppercase;">Daily System Quest</span>'+
+    '<span style="font-size:18px;font-weight:900;color:var(--y);">+'+q.exp+' EXP</span></div>'+
+    '<div style="font-size:13px;font-weight:700;color:'+(done?'rgba(240,240,240,0.3)':'var(--w)')+';line-height:1.4;margin-bottom:12px;'+(done?'text-decoration:line-through;':'')+'">'+q.task+'</div>'+
+    (done?'<div style="font-family:monospace;font-size:10px;color:var(--g);text-align:center;">COMPLETED - Well done Hunter</div>':
+    '<button class="btn btn-y" onclick="document.getElementById(\'dqConfirmOverlay\').classList.add(\'show\')" style="margin-top:0;">Mark as Complete</button>')+
+    '</div>';
+}
+function confirmDqComplete(){
+  document.getElementById('dqConfirmOverlay').classList.remove('show');
+  if(store.today.dailyQuestDone)return;
+  store.today.dailyQuestDone=true;
+  var q=getDQ();
+  applyExp(q.exp,'System Quest! +'+q.exp+' EXP');
+  renderDailyQuest();
+  save(store);
+}
+function renderTodos(){
+  var list=document.getElementById('todoList');
+  var todos=store.today.todos||[];
+  var done=todos.filter(t=>t.done).length;
+  document.getElementById('todoCount').textContent=todos.length===0?'0 quests':done+'/'+todos.length+' done';
+  if(!todos.length){list.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:20px 0;">No quests yet. Add something!</div>';return;}
+  list.innerHTML='';
+  var sorted=todos.slice().sort((a,b)=>a.done-b.done);
+  sorted.forEach(t=>{
+    var d=t.done;
+    var row=document.createElement('div');
+    row.className='todo-row'+(d?' done-t':'');
+    row.innerHTML=
+      '<div class="chk" style="'+(d?'background:var(--g);border-color:var(--g);color:#000;':'')+'" onclick="toggleTodo('+t.id+')">'+(d?'✓':'')+'</div>'+
+      '<div style="flex:1;font-size:13px;font-weight:600;color:'+(d?'rgba(240,240,240,0.3)':'var(--w)')+';text-decoration:'+(d?'line-through':'none')+';cursor:pointer;" onclick="toggleTodo('+t.id+')">'+t.text+'</div>'+
+      '<span style="font-family:monospace;font-size:9px;color:'+(d?'var(--g)':'var(--m)')+';margin-right:4px;">+50</span>'+
+      '<button class="del-btn" onclick="deleteTodo('+t.id+')">x</button>';
+    list.appendChild(row);
+  });
+}
+function addTodo(){
+  var inp=document.getElementById('todoInput');
+  var text=inp.value.trim();
+  if(!text)return;
+  if(!store.today.todos)store.today.todos=[];
+  store.today.todos.push({id:Date.now(),text:text,done:false});
+  inp.value='';
+  save(store);renderTodos();
+}
+function toggleTodo(id){
+  var t=store.today.todos.find(t=>t.id===id);
+  if(!t)return;
+  var was=t.done;
+  t.done=!was;
+  applyExp(was?-50:50,was?'Quest unticked -50 EXP':'Quest done! +50 EXP');
+  renderTodos();save(store);
+}
+function deleteTodo(id){
+  store.today.todos=store.today.todos.filter(t=>t.id!==id);
+  save(store);renderTodos();
+}
+function clearDone(){
+  store.today.todos=(store.today.todos||[]).filter(t=>!t.done);
+  save(store);renderTodos();
+}
+
+function renderRanksPage(){
+  var cur=getRank(store.totalExp);
+  var inRank=store.totalExp-cur.min;
+  var needed=cur.max-cur.min;
+  var pct=Math.min(100,(inRank/needed)*100);
+  document.getElementById('ranksList').innerHTML=RANKS.map(r=>{
+    var isCur=r.rank===cur.rank;
+    var unlocked=store.totalExp>=r.min;
+    return '<div class="rank-row" style="background:'+(isCur?r.bg:'#111118')+';border-color:'+(isCur?r.color+'50':'var(--b)')+';opacity:'+(unlocked?1:0.4)+';"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:12px;"><div style="font-size:32px;font-weight:900;color:'+r.color+';text-shadow:'+(isCur?'0 0 20px '+r.color:'none')+';width:50px;">'+r.rank+'</div><div><div style="font-size:14px;font-weight:700;color:'+(isCur?r.color:'var(--w)')+';">'+r.name+'</div><div style="font-family:monospace;font-size:9px;color:var(--m);margin-top:2px;">'+num(r.min)+' - '+num(r.max)+' EXP</div></div></div>'+(isCur?'<div style="font-family:monospace;font-size:9px;color:'+r.color+';background:'+r.color+'15;border:1px solid '+r.color+'30;border-radius:99px;padding:3px 10px;">CURRENT</div>':(unlocked?'<div style="color:#39ff14;font-size:12px;">✓</div>':''))+'</div>'+(isCur?'<div style="margin-top:10px;"><div class="bar-bg"><div class="bar-fill" style="width:'+pct+'%;background:'+r.color+';"></div></div><div style="font-family:monospace;font-size:9px;color:var(--m);margin-top:4px;text-align:right;">'+num(inRank)+' / '+num(needed)+' EXP</div></div>':'')+'</div>';
+  }).join('');
+  document.getElementById('expGuide').innerHTML=EXP_GUIDE.map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:'+e[1]+';font-weight:700;">'+e[2]+'</span></div>').join('');
+}
+
+function renderStruggles(){
+  var hist=store.history||[];
+  var el=document.getElementById('struggleList');
+  var statsEl=document.getElementById('overallStats');
+  var trigEl=document.getElementById('pmoTriggerHistory');
+  if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:20px 0;">Save at least 1 day to see struggles.</div>';}
+  else{
+    var rates=HABITS.map(h=>{
+      var done=hist.filter(d=>!!(d.checked||{})[h.id]).length;
+      return {id:h.id,text:h.text,rate:Math.round((done/hist.length)*100)};
+    }).sort((a,b)=>a.rate-b.rate);
+    el.innerHTML=rates.map(h=>{
+      var c=h.rate>=70?'#39ff14':h.rate>=40?'#ffd600':'#ff3c3c';
+      var name=h.text.replace(/^.\s/,'');
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><div style="font-size:12px;font-weight:700;color:var(--w);width:155px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+name+'</div><div class="sbar-bg"><div class="sbar-fill" style="width:'+h.rate+'%;background:'+c+';"></div></div><div style="font-family:monospace;font-size:10px;color:var(--m);width:32px;text-align:right;">'+h.rate+'%</div></div>';
+    }).join('');
+  }
+
+  // Render recent triggers
+  var trigs=store.pmo.triggers||[];
+  trigEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Recent Relapse Triggers</div>'+
+    (trigs.length===0?'<div class="muted">No relapse triggers logged. Clean hunter.</div>':
+    trigs.slice(0,5).map(t=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--r);">'+t.trigger+'</span><span style="font-family:monospace;font-size:9px;color:var(--m);">'+t.date+'</span></div>').join(''))+
+    '</div>';
+
+  statsEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Overall Stats</div>'+
+    [["Days Saved",hist.length],["Relapse Resets",store.pmo.resets||0],["Best PMO Streak",(store.pmo&&store.pmo.best||0)+" days"],["Total EXP",num(store.totalExp||0)]].map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:#39ff14;font-weight:700;">'+e[1]+'</span></div>').join('')+'</div>';
+}
+
+function renderHistory(){
+  var hist=store.history||[];
+  var el=document.getElementById('historyList');
+  if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">No history yet. Take the trial to save days!</div>';return;}
+  el.innerHTML=hist.map(day=>{
+    var done=HABITS.filter(h=>!!(day.checked||{})[h.id]).length;
+    var c=done===HABITS.length?'#39ff14':done>=4?'#ffd600':'#ff3c3c';
+    return '<div style="background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:10px;">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'c';">'+done+'/'+HABITS.length+'</span></div>'+
+      '<div>'+HABITS.map(h=>{
+        var d=!!(day.checked||{})[h.id];
+        var name=h.text.replace(/^.\s/,'').split(' ').slice(0,2).join(' ');
+        return '<span class="pill '+(d?'ok':'no')+'">'+name+'</span>';
+      }).join('')+'</div>'+
+      (day.note?'<div style="font-size:11px;color:var(--m);font-style:italic;margin-top:8px;border-top:1px solid var(--b);padding-top:8px;">"'+day.note+'"</div>':'')+
+      '</div>';
+  }).join('');
+}
+
+// PMO MILESTONE SYSTEM
+const PMO_MILESTONES=[
+  {days:3,title:"Dopamine Detoxifier",desc:"Initial receptor recalibration"},
+  {days:7,title:"Willpower Awakened",desc:"Frontal cortex reclaiming control"},
+  {days:14,title:"Neural Rewire",desc:"Severe urges fading into clarity"},
+  {days:30,title:"Unshakable Focus",desc:"Androgen balance & stable drive"},
+  {days:90,title:"S-Rank Monarch",desc:"Absolute reboot & identity shift"}
+];
+
+function getHunterTitle(days){
+  if(days>=90)return "S-RANK MONARCH";
+  if(days>=30)return "UNSHAKABLE FOCUS";
+  if(days>=14)return "NEURAL REWIRE";
+  if(days>=7)return "WILLPOWER AWAKENED";
+  if(days>=3)return "DOPAMINE DETOXIFIER";
+  return "UNINITIATED";
+}
+
+function renderPmo(){
+  var p=store.pmo||{days:0,best:0,resets:0};
+  document.getElementById('pmoDays').textContent=p.days||0;
+  document.getElementById('pmoDisplay').textContent=p.days||0;
+  document.getElementById('pmoBest').textContent=(p.best||0)+' days';
+  document.getElementById('pmoResets').textContent=p.resets||0;
+  document.getElementById('hunterPmoTitle').textContent=getHunterTitle(p.days||0);
+
+  // Render milestone cards
+  var mBox=document.getElementById('pmoMilestoneList');
+  mBox.innerHTML=PMO_MILESTONES.map(m=>{
+    var ok=(p.days||0)>=m.days;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--c);border:1px solid '+(ok?'rgba(57,255,20,0.3)':'var(--b)')+';border-radius:10px;padding:10px 14px;margin-bottom:8px;">'+
+      '<div><div style="font-size:12px;font-weight:700;color:'+(ok?'var(--g)':'var(--w)')+';">'+m.title+' ('+m.days+' Days)</div><div class="muted" style="margin-top:2px;">'+m.desc+'</div></div>'+
+      '<span class="pill '+(ok?'ok':'no')+'">'+(ok?'UNLOCKED':'LOCKED')+'</span>'+
+      '</div>';
+  }).join('');
+}
+
+function addPmoDay(){
+  if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
+  store.pmo.days++;
+  if(store.pmo.days>store.pmo.best)store.pmo.best=store.pmo.days;
+  var tier=Math.floor((store.pmo.days-1)/5);
+  var expGain=Math.min(500,(tier+1)*100);
+  applyExp(expGain,'Clean Day! +'+expGain+' EXP 🔥');
+  renderPmo();
+}
+
+function showPmoConfirm(){
+  var cur=store.pmo&&store.pmo.days||0;
+  document.getElementById('pmoConfirmText').textContent=cur<5?'You are at '+cur+' days. Resetting costs -1100 EXP. Identify the trigger below to protect next streak.':'You held '+cur+' days. Resetting costs -200 EXP. Take accountability.';
+  document.getElementById('pmoOverlay').classList.add('show');
+}
+
+function confirmRelapse(){
+  var cur=store.pmo&&store.pmo.days||0;
+  var penalty=cur<5?1100:200;
+  var trigger=document.getElementById('pmoTrigger').value;
+  store.pmo.resets=(store.pmo.resets||0)+1;
+  if(cur>(store.pmo.best||0))store.pmo.best=cur;
+  store.pmo.days=0;
+  if(!store.pmo.triggers)store.pmo.triggers=[];
+  store.pmo.triggers.unshift({trigger:trigger,date:todayKey()});
+
+  applyExp(-penalty,cur<5?'-'+penalty+' EXP Relapsed early':'-'+penalty+' EXP Rise again');
+  renderPmo();
+  document.getElementById('pmoOverlay').classList.remove('show');
+  save(store);
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='ranks')renderRanksPage();
+  if(name==='struggles')renderStruggles();
+  if(name==='history')renderHistory();
+  if(name==='quests'){renderDailyQuest();renderTodos();}
+  if(name==='pmo')renderPmo();
+}
+
+function updateTimer(){
+  var now=new Date(),mid=new Date();mid.setHours(24,0,0,0);
+  var d=mid-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);
+  document.getElementById('timerDisp').textContent='Resets in '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  checkDangerZone();
+}
+
+function midnightCheck(){
+  if(todayKey()!==store.today.date){
+    checkDateRollover();
+    renderHabits();
+    renderRankHero();
+    renderDailyQuest();
+    renderTodos();
+    renderPmo();
+    document.getElementById('noteBox').value='';
+    document.getElementById('dateDisp').textContent=fmtDate();
+  }
+}
+
+// INITIALIZE
+document.getElementById('dateDisp').textContent=fmtDate();
+document.getElementById('noteBox').value=store.today.note||'';
+renderHabits();
+renderRankHero();
+renderDailyQuest();
+renderTodos();
+renderPmo();
+checkDangerZone();
+
+setInterval(updateTimer,1000);
+setInterval(midnightCheck,15000);
+updateTimer();
+</script>
+</body>
+</html>
