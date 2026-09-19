@@ -407,7 +407,6 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
-// INITIALIZE STATE
 var store=load();
 if(!store){
   store={
@@ -437,18 +436,14 @@ function checkDateRollover(){
 }
 checkDateRollover();
 
-// NIGHT DANGER ZONE CHECK (11 PM - 4 AM)
 function checkDangerZone(){
   var h=new Date().getHours();
   var b=document.getElementById('dangerBanner');
-  if(h>=23||h<4){
-    b.style.display='flex';
-  }else{
-    b.style.display='none';
+  if(b){
+    b.style.display=(h>=23||h<4)?'flex':'none';
   }
 }
 
-// POPUP NOTIFICATIONS
 var popTimer=null;
 function showPop(amt,lbl){
   var p=document.getElementById('popup');
@@ -539,7 +534,6 @@ function saveNote(){
   save(store);
 }
 
-// URGE INTERRUPT PROTOCOL
 var urgeInt=null;
 var urgeSeconds=180;
 function triggerUrgeProtocol(){
@@ -574,7 +568,6 @@ function claimUrgeDefeat(){
   applyExp(150,'Urge Slain! +150 EXP 🔥');
 }
 
-// END OF DAY TRIAL & REWARDS
 var trialAnswers={1:false,2:false,3:false};
 function openHunterTrial(){
   trialAnswers={1:false,2:false,3:false};
@@ -605,7 +598,6 @@ function finalizeTrialAndSave(){
     applyExp(200,'Perfect Day! +200 EXP Bonus 🔥');
   }
 
-  // Bonus for passing all 3 self-evaluations
   if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]&&!store.today.trialAwarded){
     store.today.trialAwarded=true;
     applyExp(250,'Trial Mastered! +250 EXP ⚔️');
@@ -630,7 +622,6 @@ function finalizeTrialAndSave(){
   renderStruggles();
 }
 
-// DAILY QUESTS & TODOS
 function renderDailyQuest(){
   var q=getDQ();
   var done=!!store.today.dailyQuestDone;
@@ -730,7 +721,6 @@ function renderStruggles(){
     }).join('');
   }
 
-  // Render recent triggers
   var trigs=store.pmo.triggers||[];
   trigEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Recent Relapse Triggers</div>'+
     (trigs.length===0?'<div class="muted">No relapse triggers logged. Clean hunter.</div>':
@@ -749,7 +739,7 @@ function renderHistory(){
     var done=HABITS.filter(h=>!!(day.checked||{})[h.id]).length;
     var c=done===HABITS.length?'#39ff14':done>=4?'#ffd600':'#ff3c3c';
     return '<div style="background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:10px;">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'c';">'+done+'/'+HABITS.length+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'+c+';">'+done+'/'+HABITS.length+'</span></div>'+
       '<div>'+HABITS.map(h=>{
         var d=!!(day.checked||{})[h.id];
         var name=h.text.replace(/^.\s/,'').split(' ').slice(0,2).join(' ');
@@ -760,7 +750,6 @@ function renderHistory(){
   }).join('');
 }
 
-// PMO MILESTONE SYSTEM
 const PMO_MILESTONES=[
   {days:3,title:"Dopamine Detoxifier",desc:"Initial receptor recalibration"},
   {days:7,title:"Willpower Awakened",desc:"Frontal cortex reclaiming control"},
@@ -786,7 +775,6 @@ function renderPmo(){
   document.getElementById('pmoResets').textContent=p.resets||0;
   document.getElementById('hunterPmoTitle').textContent=getHunterTitle(p.days||0);
 
-  // Render milestone cards
   var mBox=document.getElementById('pmoMilestoneList');
   mBox.innerHTML=PMO_MILESTONES.map(m=>{
     var ok=(p.days||0)>=m.days;
