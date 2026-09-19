@@ -77,7 +77,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 </div>
 
 <!-- DANGER ZONE NIGHT WINDOW -->
-<div class="danger-banner" id="dangerBanner">
+<div class="danger-banner" id="dangerBanner" style="display:none;">
   <div style="font-size:20px;">👁️</div>
   <div style="flex:1;">
     <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1px;font-family:monospace;">HIGH-THREAT WINDOW ACTIVE</div>
@@ -407,6 +407,7 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
+// SAFE LOAD: Never wipe existing EXP progress
 var store=load();
 if(!store){
   store={
@@ -570,6 +571,10 @@ function claimUrgeDefeat(){
 
 var trialAnswers={1:false,2:false,3:false};
 function openHunterTrial(){
+  if(store.today.isSaved){
+    alert("Hunter, this day is already recorded in the system! Rest and prepare for tomorrow.");
+    return;
+  }
   trialAnswers={1:false,2:false,3:false};
   [1,2,3].forEach(i=>document.getElementById('tq'+i).classList.remove('selected'));
   document.getElementById('trialRewardBox').style.display='none';
@@ -589,7 +594,15 @@ function toggleTrialQ(id){
     document.getElementById('trialRewardBox').style.display='none';
   }
 }
+
+// ANTI-CHEAT SAVE LOCK
 function finalizeTrialAndSave(){
+  if(store.today.isSaved){
+    alert("Hunter, this day is already sealed.");
+    document.getElementById('trialOverlay').classList.remove('show');
+    return;
+  }
+
   var checkedMap=store.today.checked||{};
   var doneCount=HABITS.filter(h=>!!checkedMap[h.id]).length;
   
@@ -613,13 +626,19 @@ function finalizeTrialAndSave(){
   save(store);
   document.getElementById('trialOverlay').classList.remove('show');
 
-  var btn=document.getElementById('saveDayBtn');
-  btn.textContent='✓ Day & Trial Saved!';
-  btn.style.borderColor='#39ff14';
-  setTimeout(()=>{btn.textContent='⚔️ Take Hunter Trial & Save Day';},2500);
-
+  updateSaveButtonState();
   renderHistory();
   renderStruggles();
+}
+
+function updateSaveButtonState(){
+  var btn=document.getElementById('saveDayBtn');
+  if(btn&&store.today.isSaved){
+    btn.textContent='🔒 Day Completed & Sealed';
+    btn.style.borderColor='var(--b)';
+    btn.style.color='var(--m)';
+    btn.style.cursor='not-allowed';
+  }
 }
 
 function renderDailyQuest(){
@@ -846,6 +865,15 @@ function midnightCheck(){
     renderPmo();
     document.getElementById('noteBox').value='';
     document.getElementById('dateDisp').textContent=fmtDate();
+    
+    // Unlock save button for the brand new day
+    var btn=document.getElementById('saveDayBtn');
+    if(btn){
+      btn.textContent='⚔️ Take Hunter Trial & Save Day';
+      btn.style.borderColor='';
+      btn.style.color='';
+      btn.style.cursor='pointer';
+    }
   }
 }
 
@@ -858,6 +886,7 @@ renderDailyQuest();
 renderTodos();
 renderPmo();
 checkDangerZone();
+updateSaveButtonState();
 
 setInterval(updateTimer,1000);
 setInterval(midnightCheck,15000);
