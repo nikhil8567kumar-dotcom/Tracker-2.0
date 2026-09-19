@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NikRises — System</title>
 <style>
-:root{--bg:#0a0a0f;--s:#111118;--c:#16161e;--b:#252530;--g:#39ff14;--gd:rgba(57,255,20,0.1);--gg:rgba(57,255,20,0.35);--w:#efefef;--m:#555;--r:#ff3c3c;--y:#ffd600;--crimson:#8b0000;}
+:root{--bg:#0a0a0f;--s:#111118;--c:#16161e;--b:#252530;--g:#39ff14;--gd:rgba(57,255,20,0.1);--gg:rgba(57,255,20,0.35);--w:#efefef;--m:#555;--r:#ff3c3c;--y:#ffd600;--blue:#00d9ff;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-height:100vh;padding:18px 14px 100px;max-width:480px;margin:0 auto;}
-.green{color:var(--g);}.red{color:var(--r);}.yellow{color:var(--y);}
+.green{color:var(--g);}.red{color:var(--r);}.yellow{color:var(--y);}.blue{color:var(--blue);}
 .muted{color:var(--m);font-family:monospace;font-size:10px;letter-spacing:1px;}
 .surface{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
 .seclbl{font-family:monospace;font-size:9px;letter-spacing:2.5px;color:var(--m);text-transform:uppercase;margin:14px 0 8px 2px;}
@@ -38,11 +38,12 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 .btn-g{background:rgba(57,255,20,0.12);border:1px solid rgba(57,255,20,0.3)!important;color:var(--g);}
 .btn-r{background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3)!important;color:var(--r);}
 .btn-y{background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3)!important;color:var(--y);}
+.btn-blue{background:rgba(0,217,255,0.12);border:1px solid rgba(0,217,255,0.3)!important;color:var(--blue);}
 .btn-save{background:rgba(57,255,20,0.15);border:1px solid rgba(57,255,20,0.4)!important;color:var(--g);font-size:14px;}
-.btn-boss{background:rgba(255,60,60,0.16);border:1px solid rgba(255,60,60,0.4)!important;color:var(--r);font-family:monospace;font-size:10px;letter-spacing:1px;padding:7px 10px;border-radius:8px;cursor:pointer;}
+.btn-boss{background:rgba(255,60,60,0.16);border:1px solid rgba(255,60,60,0.4)!important;color:var(--r);font-family:monospace;font-size:11px;letter-spacing:1px;padding:10px;border-radius:8px;cursor:pointer;}
 .todo-row{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:12px;padding:13px 14px;margin-bottom:8px;}
 .todo-row.done-t{background:rgba(57,255,20,0.04);border-color:rgba(57,255,20,0.2);}
-.del-btn{background:none;border:none;color:var(--m);font-size:16px;cursor:pointer;padding:2px 4px;}
+.del-btn{background:none;border:none;color:var(--m);font-size:16px;cursor:pointer;padding:2px 6px;}
 .inp{flex:1;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 14px;color:var(--w);font-family:system-ui,sans-serif;font-size:13px;outline:none;}
 .inp:focus{border-color:rgba(57,255,20,0.3);}
 .add-btn{background:var(--g);border:none;border-radius:10px;width:44px;height:44px;font-size:22px;font-weight:700;color:#000;cursor:pointer;flex-shrink:0;}
@@ -55,7 +56,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 .note-ta:focus{border-color:rgba(57,255,20,0.3);}
 .sbar-bg{flex:1;height:5px;background:var(--b);border-radius:99px;overflow:hidden;}
 .sbar-fill{height:100%;border-radius:99px;}
-.danger-banner{background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.35);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:none;align-items:center;gap:10px;}
+.reward-card{background:rgba(57,255,20,0.08);border:1px dashed var(--g);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:none;}
 .trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer;}
 .trial-q.selected{border-color:var(--g);background:rgba(57,255,20,0.08);}
 </style>
@@ -76,15 +77,6 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <button onclick="document.getElementById('levelup').classList.remove('show')" id="luBtn" style="margin-top:24px;border:none;border-radius:12px;padding:14px 32px;font-size:18px;letter-spacing:2px;color:#000;cursor:pointer;font-weight:900;">ARISE ⚔️</button>
 </div>
 
-<!-- DANGER ZONE NIGHT WINDOW -->
-<div class="danger-banner" id="dangerBanner" style="display:none;">
-  <div style="font-size:20px;">👁️</div>
-  <div style="flex:1;">
-    <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1px;font-family:monospace;">HIGH-THREAT WINDOW ACTIVE</div>
-    <div style="font-size:11px;color:var(--w);opacity:0.8;">Late night detected. Phone away from bed. Defend your mind.</div>
-  </div>
-</div>
-
 <!-- EMERGENCY URGE PROTOCOL OVERLAY -->
 <div class="overlay" id="urgeOverlay">
   <div class="obox" style="border-color:var(--r);">
@@ -97,7 +89,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   </div>
 </div>
 
-<!-- PMO RELAPSE WITH TRIGGER LOGGING -->
+<!-- PMO RELAPSE OVERLAY -->
 <div class="overlay" id="pmoOverlay">
   <div class="obox">
     <div style="font-size:22px;color:var(--r);font-weight:900;margin-bottom:8px;">Reset Streak?</div>
@@ -113,6 +105,20 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     <div style="display:flex;gap:10px;">
       <button onclick="document.getElementById('pmoOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:13px;font-weight:700;">Cancel</button>
       <button onclick="confirmRelapse()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--r);color:#fff;cursor:pointer;font-size:13px;font-weight:700;">Confirm Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- STREAK FREEZE CONFIRM OVERLAY -->
+<div class="overlay" id="freezeOverlay">
+  <div class="obox" style="border-color:var(--blue);">
+    <div style="font-size:20px;color:var(--blue);font-weight:900;">🛡️ ACTIVATE FREEZE SHIELD?</div>
+    <p style="font-size:12px;color:var(--m);margin:10px 0 16px;line-height:1.5;">
+      Using 1 shield protects your streaks and locks today without EXP loss. Use strictly for sickness, emergencies, or heavy travel.
+    </p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('freezeOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:13px;font-weight:700;">Cancel</button>
+      <button onclick="confirmUseFreeze()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#000;cursor:pointer;font-size:13px;font-weight:700;">Activate Shield</button>
     </div>
   </div>
 </div>
@@ -149,8 +155,8 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     </div>
 
     <div id="trialRewardBox" style="display:none;background:rgba(57,255,20,0.08);border:1px dashed var(--g);border-radius:10px;padding:12px;margin:12px 0;text-align:center;">
-      <div style="font-size:11px;font-weight:800;color:var(--g);letter-spacing:1px;font-family:monospace;">HUNTER REWARD UNLOCKED</div>
-      <div id="rewardText" style="font-size:13px;font-weight:700;margin-top:4px;color:var(--w);"></div>
+      <div style="font-family:monospace;font-size:10px;font-weight:800;color:var(--g);letter-spacing:1px;">REWARD UNLOCKED FOR TOMORROW</div>
+      <div id="rewardText" style="font-size:13px;font-weight:700;margin-top:6px;color:var(--w);"></div>
     </div>
 
     <button class="btn btn-save" onclick="finalizeTrialAndSave()">Confirm Day Completion (+250 Trial EXP)</button>
@@ -161,10 +167,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 <!-- HEADER -->
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
   <div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div style="font-size:36px;font-weight:900;letter-spacing:2px;line-height:1;">NIK<span class="green">RISES</span></div>
-      <button class="btn-boss" onclick="triggerUrgeProtocol()">⚔️ Urge Protocol</button>
-    </div>
+    <div style="font-size:38px;font-weight:900;letter-spacing:2px;line-height:1;">NIK<span class="green">RISES</span></div>
     <div class="muted" style="margin-top:2px;">⚡ Solo Leveling Discipline Engine</div>
   </div>
   <div class="pmo-btn" onclick="addPmoDay()">
@@ -183,19 +186,19 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
       <div id="rankName" style="font-size:18px;font-weight:700;color:var(--w);">Silver Hunter</div>
       <div style="display:flex;gap:8px;align-items:center;margin-top:2px;justify-content:flex-end;">
         <div class="muted">HUNTER RANK</div>
-        <div id="levelDisp" style="font-family:monospace;font-size:10px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:6px;padding:2px 7px;">LVL 10</div>
+        <div id="levelDisp" style="font-family:monospace;font-size:10px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:6px;padding:2px 7px;">LVL 11</div>
       </div>
     </div>
   </div>
   <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
     <span class="muted">EXP Progress</span>
-    <span id="expFraction" style="font-family:monospace;font-size:11px;color:var(--w);font-weight:700;">2,000 / 17,000</span>
+    <span id="expFraction" style="font-family:monospace;font-size:11px;color:var(--w);font-weight:700;">3,000 / 17,000</span>
   </div>
-  <div class="bar-bg"><div id="expBar" class="bar-fill" style="width:11.7%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
+  <div class="bar-bg"><div id="expBar" class="bar-fill" style="width:17.6%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
   <div style="display:flex;justify-content:space-between;margin-top:12px;">
-    <div style="text-align:center;"><div id="totalExpDisp" style="font-size:18px;font-weight:900;color:var(--g);">10,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Total EXP</div></div>
-    <div style="text-align:center;"><div id="toNextDisp" style="font-size:18px;font-weight:900;color:var(--w);">15,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">To Next</div></div>
-    <div style="text-align:center;"><div id="penaltiesDisp" style="font-size:18px;font-weight:900;color:var(--r);">0</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Relapses</div></div>
+    <div style="text-align:center;"><div id="totalExpDisp" style="font-size:18px;font-weight:900;color:var(--g);">11,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Total EXP</div></div>
+    <div style="text-align:center;"><div id="toNextDisp" style="font-size:18px;font-weight:900;color:var(--w);">14,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">To Next</div></div>
+    <div style="text-align:center;"><div id="freezesDisp" style="font-size:18px;font-weight:900;color:var(--blue);">0/2</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Shields</div></div>
   </div>
 </div>
 
@@ -218,6 +221,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 <div class="tabs">
   <button class="tab active" onclick="switchTab('today',this)">Today</button>
   <button class="tab" onclick="switchTab('quests',this)">Quests</button>
+  <button class="tab" onclick="switchTab('rewards',this)">Rewards</button>
   <button class="tab" onclick="switchTab('ranks',this)">Ranks</button>
   <button class="tab" onclick="switchTab('struggles',this)">Struggles</button>
   <button class="tab" onclick="switchTab('history',this)">History</button>
@@ -226,10 +230,20 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 
 <!-- TODAY -->
 <div class="panel active" id="panel-today">
+  <!-- ACTIVE EARNED REWARD CARD -->
+  <div class="reward-card" id="todayRewardCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:monospace;font-size:9px;color:var(--g);letter-spacing:1.5px;font-weight:700;">🎁 UNLOCKED REWARD</span>
+      <span class="badge">ACTIVE</span>
+    </div>
+    <div id="todayRewardDesc" style="font-size:13px;font-weight:700;color:var(--w);margin-top:6px;"></div>
+  </div>
+
   <div id="habitsList"></div>
   <div class="seclbl">Quick Note</div>
   <textarea class="note-ta" id="noteBox" placeholder="Anything on your mind today..." oninput="saveNote()"></textarea>
   <button class="btn btn-save" style="margin-top:10px;" id="saveDayBtn" onclick="openHunterTrial()">⚔️ Take Hunter Trial & Save Day</button>
+  <button class="btn btn-blue" style="margin-top:6px;" onclick="openFreezeModal()">🛡️ Use Streak Freeze Shield</button>
 </div>
 
 <!-- QUESTS -->
@@ -245,6 +259,17 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     <button onclick="clearDone()" style="font-family:monospace;font-size:9px;color:var(--m);background:none;border:1px solid var(--b);border-radius:6px;padding:4px 10px;cursor:pointer;">Clear done</button>
   </div>
   <div id="todoList"></div>
+</div>
+
+<!-- REWARDS INVENTORY -->
+<div class="panel" id="panel-rewards">
+  <div class="seclbl">Your Custom Reward Pool</div>
+  <div class="muted" style="margin-bottom:12px;">Winning the night trial randomly selects one from here!</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <input class="inp" id="rewardInput" placeholder="Add a custom reward (e.g. 1hr Gaming)..." maxlength="60" onkeydown="if(event.key==='Enter')addCustomReward()">
+    <button class="add-btn" onclick="addCustomReward()">+</button>
+  </div>
+  <div id="customRewardList"></div>
 </div>
 
 <!-- RANKS -->
@@ -283,7 +308,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
       <div style="text-align:center;"><div id="pmoResets" style="font-size:22px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Total Resets</div></div>
     </div>
     <button class="btn btn-g" onclick="addPmoDay()" style="margin-top:14px;">+ Add Clean Day (+100 to +500 EXP)</button>
-    <button class="btn btn-boss" onclick="triggerUrgeProtocol()" style="margin-top:8px;width:100%;padding:12px;">🚨 Activate 3-Min Urge Killer</button>
+    <button class="btn btn-boss" onclick="triggerUrgeProtocol()" style="margin-top:8px;width:100%;">⚔️ Activate 3-Min Urge Protocol</button>
     <button class="btn btn-r" onclick="showPmoConfirm()">⚠ I relapsed — reset streak</button>
   </div>
 
@@ -357,7 +382,7 @@ const URGE_TASKS=[
   "Do 50 Jumping Jacks + 30 Squats immediately.",
   "Put phone face down, walk into another room and drink a tall glass of cold water."
 ];
-const REWARDS=[
+const DEFAULT_REWARDS=[
   "30 minutes of guilt-free gaming / favorite anime episode",
   "Buy yourself your favorite cheat snack or protein treat tomorrow",
   "1 hour guilt-free deep dive into an interesting documentary/podcast",
@@ -372,6 +397,7 @@ const EXP_GUIDE=[
   ["System quest","#ffd600","up to +150"],
   ["Custom quest","#39ff14","+50"],
   ["PMO clean day","#39ff14","+100 to +500"],
+  ["Freeze shield earned","#00d9ff","Every 7 clean days"],
   ["PMO relapse under 5d","#ff3c3c","-1100"],
   ["PMO relapse 5d+","#ff3c3c","-200"]
 ];
@@ -407,53 +433,57 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
-// SAFE LOAD: Never wipe existing EXP progress
 var store=load();
 if(!store){
   store={
-    totalExp:10000,
+    totalExp:11000,
     penalties:0,
+    freezes:0,
+    rewards:DEFAULT_REWARDS.slice(),
     pmo:{days:0,best:3,resets:0,triggers:[]},
-    today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false},
+    today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:'',frozen:false},
     history:[]
   };
   save(store);
 }
-if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=10000;
+
+if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=11000;
+if(typeof store.freezes!=='number')store.freezes=0;
+if(!store.rewards||!store.rewards.length)store.rewards=DEFAULT_REWARDS.slice();
 if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
 if(!store.pmo.triggers)store.pmo.triggers=[];
 if(!store.penalties)store.penalties=0;
 if(!store.history)store.history=[];
-if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
+if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:'',frozen:false};
 if(!store.today.checked)store.today.checked={};
 if(!store.today.todos)store.today.todos=[];
+
+// Auto-populate reward card if already saved today
+if(store.today.isSaved&&!store.today.earnedReward){
+  store.today.earnedReward=store.rewards[0]||DEFAULT_REWARDS[0];
+  save(store);
+}
 
 function checkDateRollover(){
   var curDate=todayKey();
   if(store.today.date!==curDate){
-    store.today={date:curDate,checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
+    var prevReward=store.today.earnedReward||'';
+    store.today={date:curDate,checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:prevReward,frozen:false};
     save(store);
   }
 }
 checkDateRollover();
 
-function checkDangerZone(){
-  var h=new Date().getHours();
-  var b=document.getElementById('dangerBanner');
-  if(b){
-    b.style.display=(h>=23||h<4)?'flex':'none';
-  }
-}
-
 var popTimer=null;
-function showPop(amt,lbl){
+function showPop(amt,lbl,color){
   var p=document.getElementById('popup');
   var n=document.getElementById('popNum');
   var l=document.getElementById('popLbl');
   n.textContent=(amt>0?'+':'')+amt;
-  n.style.color=amt>0?'#39ff14':'#ff3c3c';
+  var c=color?color:(amt>0?'#39ff14':'#ff3c3c');
+  n.style.color=c;
   l.textContent=lbl;
-  p.style.border='2px solid '+(amt>0?'#39ff14':'#ff3c3c');
+  p.style.border='2px solid '+c;
   p.style.boxShadow='0 0 40px '+(amt>0?'rgba(57,255,20,0.3)':'rgba(255,60,60,0.3)');
   p.classList.add('show');
   if(popTimer)clearTimeout(popTimer);
@@ -500,7 +530,18 @@ function renderRankHero(){
   document.getElementById('totalExpDisp').textContent=num(store.totalExp);
   document.getElementById('totalExpDisp').style.color=r.color;
   document.getElementById('toNextDisp').textContent=num(r.max-store.totalExp);
-  document.getElementById('penaltiesDisp').textContent=store.pmo.resets||0;
+  document.getElementById('freezesDisp').textContent=(store.freezes||0)+'/2';
+}
+
+function renderRewardCard(){
+  var c=document.getElementById('todayRewardCard');
+  var d=document.getElementById('todayRewardDesc');
+  if(store.today.earnedReward){
+    d.textContent=store.today.earnedReward;
+    c.style.display='block';
+  }else{
+    c.style.display='none';
+  }
 }
 
 function renderHabits(){
@@ -522,6 +563,7 @@ function renderHabits(){
 }
 
 function toggleHabit(id){
+  if(store.today.isSaved) return;
   if(!store.today.checked)store.today.checked={};
   var was=!!store.today.checked[id];
   store.today.checked[id]=!was;
@@ -535,6 +577,66 @@ function saveNote(){
   save(store);
 }
 
+/* STREAK FREEZE SYSTEM */
+function openFreezeModal(){
+  if(store.today.isSaved){
+    alert("Day is already finished and sealed!");
+    return;
+  }
+  if((store.freezes||0)<=0){
+    alert("No Freeze Shields available! Earn +1 Shield for every 7 clean PMO days.");
+    return;
+  }
+  document.getElementById('freezeOverlay').classList.add('show');
+}
+function confirmUseFreeze(){
+  document.getElementById('freezeOverlay').classList.remove('show');
+  if((store.freezes||0)<=0) return;
+  store.freezes--;
+  store.today.isSaved=true;
+  store.today.frozen=true;
+  store.today.note=(document.getElementById('noteBox').value||'')+" [🛡️ Streak Freeze Shield Used]";
+
+  var idx=store.history.findIndex(h=>h.date===store.today.date);
+  if(idx>=0)store.history[idx]=JSON.parse(JSON.stringify(store.today));
+  else store.history.unshift(JSON.parse(JSON.stringify(store.today)));
+
+  save(store);
+  showPop(0,'SHIELD ACTIVE! 🛡️','#00d9ff');
+  updateSaveButtonState();
+  renderRankHero();
+  renderHistory();
+}
+
+/* CUSTOM REWARDS INVENTORY */
+function renderCustomRewards(){
+  var list=document.getElementById('customRewardList');
+  if(!store.rewards||!store.rewards.length){
+    list.innerHTML='<div class="muted" style="text-align:center;padding:20px;">No custom rewards added yet.</div>';
+    return;
+  }
+  list.innerHTML=store.rewards.map((r,i)=>
+    '<div class="todo-row"><div style="flex:1;font-size:13px;font-weight:600;color:var(--w);">🎁 '+r+'</div>'+
+    '<button class="del-btn" onclick="deleteCustomReward('+i+')">x</button></div>'
+  ).join('');
+}
+function addCustomReward(){
+  var inp=document.getElementById('rewardInput');
+  var val=inp.value.trim();
+  if(!val) return;
+  if(!store.rewards) store.rewards=[];
+  store.rewards.push(val);
+  inp.value='';
+  save(store);
+  renderCustomRewards();
+}
+function deleteCustomReward(idx){
+  store.rewards.splice(idx,1);
+  save(store);
+  renderCustomRewards();
+}
+
+/* URGE PROTOCOL */
 var urgeInt=null;
 var urgeSeconds=180;
 function triggerUrgeProtocol(){
@@ -569,7 +671,9 @@ function claimUrgeDefeat(){
   applyExp(150,'Urge Slain! +150 EXP 🔥');
 }
 
+/* TRIAL & SAVE */
 var trialAnswers={1:false,2:false,3:false};
+var stagedReward='';
 function openHunterTrial(){
   if(store.today.isSaved){
     alert("Hunter, this day is already recorded in the system! Rest and prepare for tomorrow.");
@@ -587,15 +691,14 @@ function toggleTrialQ(id){
   else el.classList.remove('selected');
 
   if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]){
-    var r=REWARDS[Math.floor(Math.random()*REWARDS.length)];
-    document.getElementById('rewardText').textContent=r;
+    var pool=(store.rewards&&store.rewards.length)?store.rewards:DEFAULT_REWARDS;
+    stagedReward=pool[Math.floor(Math.random()*pool.length)];
+    document.getElementById('rewardText').textContent=stagedReward;
     document.getElementById('trialRewardBox').style.display='block';
   }else{
     document.getElementById('trialRewardBox').style.display='none';
   }
 }
-
-// ANTI-CHEAT SAVE LOCK
 function finalizeTrialAndSave(){
   if(store.today.isSaved){
     alert("Hunter, this day is already sealed.");
@@ -616,7 +719,9 @@ function finalizeTrialAndSave(){
     applyExp(250,'Trial Mastered! +250 EXP ⚔️');
   }
 
+  var pool=(store.rewards&&store.rewards.length)?store.rewards:DEFAULT_REWARDS;
   store.today.isSaved=true;
+  store.today.earnedReward=stagedReward||pool[0];
   store.today.note=document.getElementById('noteBox').value;
 
   var idx=store.history.findIndex(h=>h.date===store.today.date);
@@ -627,6 +732,7 @@ function finalizeTrialAndSave(){
   document.getElementById('trialOverlay').classList.remove('show');
 
   updateSaveButtonState();
+  renderRewardCard();
   renderHistory();
   renderStruggles();
 }
@@ -634,7 +740,7 @@ function finalizeTrialAndSave(){
 function updateSaveButtonState(){
   var btn=document.getElementById('saveDayBtn');
   if(btn&&store.today.isSaved){
-    btn.textContent='🔒 Day Completed & Sealed';
+    btn.textContent=store.today.frozen?'🛡️ Day Shielded & Frozen':'🔒 Day Completed & Sealed';
     btn.style.borderColor='var(--b)';
     btn.style.color='var(--m)';
     btn.style.cursor='not-allowed';
@@ -663,6 +769,7 @@ function confirmDqComplete(){
   renderDailyQuest();
   save(store);
 }
+
 function renderTodos(){
   var list=document.getElementById('todoList');
   var todos=store.today.todos||[];
@@ -747,7 +854,7 @@ function renderStruggles(){
     '</div>';
 
   statsEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Overall Stats</div>'+
-    [["Days Saved",hist.length],["Relapse Resets",store.pmo.resets||0],["Best PMO Streak",(store.pmo&&store.pmo.best||0)+" days"],["Total EXP",num(store.totalExp||0)]].map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:#39ff14;font-weight:700;">'+e[1]+'</span></div>').join('')+'</div>';
+    [["Days Saved",hist.length],["Available Shields",(store.freezes||0)+"/2"],["Relapse Resets",store.pmo.resets||0],["Best PMO Streak",(store.pmo&&store.pmo.best||0)+" days"],["Total EXP",num(store.totalExp||0)]].map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:#39ff14;font-weight:700;">'+e[1]+'</span></div>').join('')+'</div>';
 }
 
 function renderHistory(){
@@ -756,14 +863,15 @@ function renderHistory(){
   if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">No history yet. Take the trial to save days!</div>';return;}
   el.innerHTML=hist.map(day=>{
     var done=HABITS.filter(h=>!!(day.checked||{})[h.id]).length;
-    var c=done===HABITS.length?'#39ff14':done>=4?'#ffd600':'#ff3c3c';
+    var c=day.frozen?'#00d9ff':(done===HABITS.length?'#39ff14':done>=4?'#ffd600':'#ff3c3c');
     return '<div style="background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:10px;">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'+c+';">'+done+'/'+HABITS.length+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'+c+';">'+(day.frozen?'🛡️ FROZEN':done+'/'+HABITS.length)+'</span></div>'+
       '<div>'+HABITS.map(h=>{
         var d=!!(day.checked||{})[h.id];
         var name=h.text.replace(/^.\s/,'').split(' ').slice(0,2).join(' ');
         return '<span class="pill '+(d?'ok':'no')+'">'+name+'</span>';
       }).join('')+'</div>'+
+      (day.earnedReward?'<div style="font-size:11px;color:var(--g);margin-top:6px;font-weight:700;">🎁 Reward: '+day.earnedReward+'</div>':'')+
       (day.note?'<div style="font-size:11px;color:var(--m);font-style:italic;margin-top:8px;border-top:1px solid var(--b);padding-top:8px;">"'+day.note+'"</div>':'')+
       '</div>';
   }).join('');
@@ -771,8 +879,8 @@ function renderHistory(){
 
 const PMO_MILESTONES=[
   {days:3,title:"Dopamine Detoxifier",desc:"Initial receptor recalibration"},
-  {days:7,title:"Willpower Awakened",desc:"Frontal cortex reclaiming control"},
-  {days:14,title:"Neural Rewire",desc:"Severe urges fading into clarity"},
+  {days:7,title:"Willpower Awakened",desc:"Frontal cortex reclaiming control (+1 Shield)"},
+  {days:14,title:"Neural Rewire",desc:"Severe urges fading into clarity (+1 Shield)"},
   {days:30,title:"Unshakable Focus",desc:"Androgen balance & stable drive"},
   {days:90,title:"S-Rank Monarch",desc:"Absolute reboot & identity shift"}
 ];
@@ -808,10 +916,18 @@ function addPmoDay(){
   if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
   store.pmo.days++;
   if(store.pmo.days>store.pmo.best)store.pmo.best=store.pmo.days;
+
+  // Award +1 streak freeze for every 7 days clean (max 2)
+  if(store.pmo.days%7===0 && (store.freezes||0)<2){
+    store.freezes=(store.freezes||0)+1;
+    showPop(0,'SHIELD EARNED! 🛡️','#00d9ff');
+  }
+
   var tier=Math.floor((store.pmo.days-1)/5);
   var expGain=Math.min(500,(tier+1)*100);
   applyExp(expGain,'Clean Day! +'+expGain+' EXP 🔥');
   renderPmo();
+  renderRankHero();
 }
 
 function showPmoConfirm(){
@@ -845,6 +961,7 @@ function switchTab(name,btn){
   if(name==='struggles')renderStruggles();
   if(name==='history')renderHistory();
   if(name==='quests'){renderDailyQuest();renderTodos();}
+  if(name==='rewards')renderCustomRewards();
   if(name==='pmo')renderPmo();
 }
 
@@ -852,7 +969,6 @@ function updateTimer(){
   var now=new Date(),mid=new Date();mid.setHours(24,0,0,0);
   var d=mid-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);
   document.getElementById('timerDisp').textContent='Resets in '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-  checkDangerZone();
 }
 
 function midnightCheck(){
@@ -863,10 +979,10 @@ function midnightCheck(){
     renderDailyQuest();
     renderTodos();
     renderPmo();
+    renderRewardCard();
     document.getElementById('noteBox').value='';
     document.getElementById('dateDisp').textContent=fmtDate();
     
-    // Unlock save button for the brand new day
     var btn=document.getElementById('saveDayBtn');
     if(btn){
       btn.textContent='⚔️ Take Hunter Trial & Save Day';
@@ -885,7 +1001,8 @@ renderRankHero();
 renderDailyQuest();
 renderTodos();
 renderPmo();
-checkDangerZone();
+renderRewardCard();
+renderCustomRewards();
 updateSaveButtonState();
 
 setInterval(updateTimer,1000);
