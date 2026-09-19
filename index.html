@@ -57,6 +57,8 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 .sbar-bg{flex:1;height:5px;background:var(--b);border-radius:99px;overflow:hidden;}
 .sbar-fill{height:100%;border-radius:99px;}
 .reward-card{background:rgba(57,255,20,0.08);border:1px dashed var(--g);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:none;}
+.punish{background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.25);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:none;}
+.punish.show{display:block;}
 .trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer;}
 .trial-q.selected{border-color:var(--g);background:rgba(57,255,20,0.08);}
 </style>
@@ -94,6 +96,13 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <div class="obox">
     <div style="font-size:22px;color:var(--r);font-weight:900;margin-bottom:8px;">Reset Streak?</div>
     <p id="pmoConfirmText" style="font-size:12px;color:var(--m);margin-bottom:14px;line-height:1.4;"></p>
+    
+    <div id="shieldAvailableBox" style="display:none;background:rgba(0,217,255,0.08);border:1px dashed var(--blue);border-radius:10px;padding:12px;margin-bottom:14px;text-align:center;">
+      <div style="font-family:monospace;font-size:11px;color:var(--blue);font-weight:800;">🛡️ HUNTER SHIELD READY</div>
+      <div style="font-size:12px;color:var(--w);margin-top:4px;">Consume 1 shield to protect streak and prevent EXP loss!</div>
+      <button class="btn btn-blue" onclick="absorbRelapseWithShield()" style="margin-top:8px;">🛡️ Absorb with Shield (Keep Streak)</button>
+    </div>
+
     <div class="seclbl" style="text-align:left;">Trigger Analysis</div>
     <select id="pmoTrigger" class="inp" style="width:100%;margin-bottom:14px;padding:10px;">
       <option value="Late Night Phone">Late Night Phone</option>
@@ -104,21 +113,19 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     </select>
     <div style="display:flex;gap:10px;">
       <button onclick="document.getElementById('pmoOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:13px;font-weight:700;">Cancel</button>
-      <button onclick="confirmRelapse()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--r);color:#fff;cursor:pointer;font-size:13px;font-weight:700;">Confirm Reset</button>
+      <button onclick="confirmRelapse()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--r);color:#fff;cursor:pointer;font-size:13px;font-weight:700;">Accept Reset</button>
     </div>
   </div>
 </div>
 
-<!-- STREAK FREEZE CONFIRM OVERLAY -->
-<div class="overlay" id="freezeOverlay">
-  <div class="obox" style="border-color:var(--blue);">
-    <div style="font-size:20px;color:var(--blue);font-weight:900;">🛡️ ACTIVATE FREEZE SHIELD?</div>
-    <p style="font-size:12px;color:var(--m);margin:10px 0 16px;line-height:1.5;">
-      Using 1 shield protects your streaks and locks today without EXP loss. Use strictly for sickness, emergencies, or heavy travel.
-    </p>
+<!-- PUNISHMENT CONFIRM OVERLAY -->
+<div class="overlay" id="punishConfirmOverlay">
+  <div class="obox">
+    <div style="font-size:22px;color:var(--g);font-weight:900;margin-bottom:8px;">⚔️ Punishment Done?</div>
+    <p style="font-size:13px;color:var(--m);margin-bottom:20px;line-height:1.5;">Did you finish the physical punishment task? Hunter honor only. 👁️</p>
     <div style="display:flex;gap:10px;">
-      <button onclick="document.getElementById('freezeOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:13px;font-weight:700;">Cancel</button>
-      <button onclick="confirmUseFreeze()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#000;cursor:pointer;font-size:13px;font-weight:700;">Activate Shield</button>
+      <button onclick="document.getElementById('punishConfirmOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:14px;font-weight:700;">No I didn't</button>
+      <button onclick="confirmPunishComplete()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--g);color:#000;cursor:pointer;font-size:14px;font-weight:700;">Yes I did ✓</button>
     </div>
   </div>
 </div>
@@ -127,7 +134,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 <div class="overlay" id="dqConfirmOverlay">
   <div class="obox">
     <div style="font-size:22px;color:var(--y);font-weight:900;margin-bottom:8px;">⚡ Quest Complete?</div>
-    <p style="font-size:13px;color:var(--m);margin-bottom:20px;line-height:1.5;">Did you finish today's system mission? Hunter's honor only! 💪</p>
+    <p style="font-size:13px;color:var(--m);margin-bottom:20px;line-height:1.5;">Did you finish today's system mission? Only claim if done! 💪</p>
     <div style="display:flex;gap:10px;">
       <button onclick="document.getElementById('dqConfirmOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:14px;font-weight:700;">Not yet</button>
       <button onclick="confirmDqComplete()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--y);color:#000;cursor:pointer;font-size:14px;font-weight:700;">Yes done ✓</button>
@@ -159,7 +166,12 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
       <div id="rewardText" style="font-size:13px;font-weight:700;margin-top:6px;color:var(--w);"></div>
     </div>
 
-    <button class="btn btn-save" onclick="finalizeTrialAndSave()">Confirm Day Completion (+250 Trial EXP)</button>
+    <div id="trialMissedWarning" style="display:none;background:rgba(255,60,60,0.08);border:1px dashed var(--r);border-radius:10px;padding:12px;margin:12px 0;text-align:center;">
+      <div style="font-family:monospace;font-size:10px;font-weight:800;color:var(--r);letter-spacing:1px;">PENALTY QUEST WILL BE ISSUED</div>
+      <div id="missedWarningText" style="font-size:12px;font-weight:700;margin-top:4px;color:var(--w);"></div>
+    </div>
+
+    <button class="btn btn-save" onclick="finalizeTrialAndSave()">Confirm Day Completion</button>
     <button class="btn btn-r" onclick="document.getElementById('trialOverlay').classList.remove('show')" style="margin-top:6px;">Close</button>
   </div>
 </div>
@@ -177,7 +189,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   </div>
 </div>
 
-<!-- RANK HERO -->
+<!-- RANK HERO (Shows Total EXP, To Next, Penalties, and Shields) -->
 <div class="rank-hero" id="rankHero">
   <div id="rankGlow" style="position:absolute;inset:0;pointer-events:none;"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -198,6 +210,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <div style="display:flex;justify-content:space-between;margin-top:12px;">
     <div style="text-align:center;"><div id="totalExpDisp" style="font-size:18px;font-weight:900;color:var(--g);">11,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Total EXP</div></div>
     <div style="text-align:center;"><div id="toNextDisp" style="font-size:18px;font-weight:900;color:var(--w);">14,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">To Next</div></div>
+    <div style="text-align:center;"><div id="penaltiesDisp" style="font-size:18px;font-weight:900;color:var(--r);">0</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Penalties</div></div>
     <div style="text-align:center;"><div id="freezesDisp" style="font-size:18px;font-weight:900;color:var(--blue);">0/2</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Shields</div></div>
   </div>
 </div>
@@ -217,6 +230,14 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <div class="bar-bg"><div id="progressBar" class="bar-fill" style="width:0%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
 </div>
 
+<!-- PUNISHMENT BANNER -->
+<div class="punish" id="punishBanner">
+  <div style="font-size:15px;color:var(--r);font-weight:900;">⚠ PENALTY QUEST ACTIVE</div>
+  <div id="punishMeta" style="font-family:monospace;font-size:10px;color:var(--r);margin-top:4px;"></div>
+  <div id="punishTask" style="font-size:13px;font-weight:700;color:var(--r);margin:8px 0;"></div>
+  <button class="btn btn-g" onclick="document.getElementById('punishConfirmOverlay').classList.add('show')">✓ Punishment Complete — Claim +300 EXP</button>
+</div>
+
 <!-- TABS -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('today',this)">Today</button>
@@ -230,7 +251,6 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 
 <!-- TODAY -->
 <div class="panel active" id="panel-today">
-  <!-- ACTIVE EARNED REWARD CARD -->
   <div class="reward-card" id="todayRewardCard">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-family:monospace;font-size:9px;color:var(--g);letter-spacing:1.5px;font-weight:700;">🎁 UNLOCKED REWARD</span>
@@ -243,7 +263,6 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <div class="seclbl">Quick Note</div>
   <textarea class="note-ta" id="noteBox" placeholder="Anything on your mind today..." oninput="saveNote()"></textarea>
   <button class="btn btn-save" style="margin-top:10px;" id="saveDayBtn" onclick="openHunterTrial()">⚔️ Take Hunter Trial & Save Day</button>
-  <button class="btn btn-blue" style="margin-top:6px;" onclick="openFreezeModal()">🛡️ Use Streak Freeze Shield</button>
 </div>
 
 <!-- QUESTS -->
@@ -320,7 +339,8 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     Day 1-5 = <span class="green">+100 EXP</span> • Day 6-10 = <span class="green">+200 EXP</span><br>
     Day 11-15 = <span class="green">+300 EXP</span> • Day 16-20 = <span class="green">+400 EXP</span><br>
     Day 21+ = <span class="green">+500 EXP</span> per day<br>
-    Under 5 days → relapse = <span class="red">-1100 EXP</span> • 5+ days = <span class="yellow">-200 EXP</span>
+    Under 5 days → relapse = <span class="red">-1100 EXP</span> • 5+ days = <span class="yellow">-200 EXP</span><br>
+    <span class="blue">🛡️ Shields protect streaks & prevent relapse EXP loss!</span>
   </div>
 </div>
 
@@ -382,6 +402,11 @@ const URGE_TASKS=[
   "Do 50 Jumping Jacks + 30 Squats immediately.",
   "Put phone face down, walk into another room and drink a tall glass of cold water."
 ];
+const P1=["50 Pushups before midnight","30 min walk outside","1 hour deep work no phone","100 Jumping Jacks","Cold shower today"];
+const P2=["100 Pushups before midnight","5KM walk or run today","2 hours deep work no distractions","200 Jumping Jacks + 100 Crunches","Read for 1 hour non-stop"];
+const P3=["200 Pushups + 200 Squats before midnight","10KM walk no excuses","4 hours deep work phone away","100 Burpees + 100 Pushups","No social media all day"];
+const P4=["300 Pushups + 300 Squats + 5KM run all today","15KM walk no shortcuts","6 hours deep work phone off","150 Burpees + 150 Pushups + 150 Squats","Full phone detox calls only"];
+
 const DEFAULT_REWARDS=[
   "30 minutes of guilt-free gaming / favorite anime episode",
   "Buy yourself your favorite cheat snack or protein treat tomorrow",
@@ -396,8 +421,9 @@ const EXP_GUIDE=[
   ["Hunter trial passed","#39ff14","+250 bonus"],
   ["System quest","#ffd600","up to +150"],
   ["Custom quest","#39ff14","+50"],
+  ["Punishment cleared","#39ff14","+300"],
   ["PMO clean day","#39ff14","+100 to +500"],
-  ["Freeze shield earned","#00d9ff","Every 7 clean days"],
+  ["Shield earned","#00d9ff","Every 7 clean days"],
   ["PMO relapse under 5d","#ff3c3c","-1100"],
   ["PMO relapse 5d+","#ff3c3c","-200"]
 ];
@@ -427,6 +453,7 @@ function getDQ(){
   const seed=todayKey().split('-').reduce((a,b)=>a+parseInt(b),0);
   return DAILY_QUESTS[seed%DAILY_QUESTS.length];
 }
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 function fmtDate(){
   var n=new Date(),days=["SUN","MON","TUE","WED","THU","FRI","SAT"],months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
   return days[n.getDay()]+' '+n.getDate()+' '+months[n.getMonth()]+' '+n.getFullYear();
@@ -440,8 +467,9 @@ if(!store){
     penalties:0,
     freezes:0,
     rewards:DEFAULT_REWARDS.slice(),
+    punishment:null,
     pmo:{days:0,best:3,resets:0,triggers:[]},
-    today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:'',frozen:false},
+    today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:''},
     history:[]
   };
   save(store);
@@ -449,16 +477,15 @@ if(!store){
 
 if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=11000;
 if(typeof store.freezes!=='number')store.freezes=0;
+if(typeof store.penalties!=='number')store.penalties=0;
 if(!store.rewards||!store.rewards.length)store.rewards=DEFAULT_REWARDS.slice();
 if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
 if(!store.pmo.triggers)store.pmo.triggers=[];
-if(!store.penalties)store.penalties=0;
 if(!store.history)store.history=[];
-if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:'',frozen:false};
+if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:''};
 if(!store.today.checked)store.today.checked={};
 if(!store.today.todos)store.today.todos=[];
 
-// Auto-populate reward card if already saved today
 if(store.today.isSaved&&!store.today.earnedReward){
   store.today.earnedReward=store.rewards[0]||DEFAULT_REWARDS[0];
   save(store);
@@ -468,7 +495,7 @@ function checkDateRollover(){
   var curDate=todayKey();
   if(store.today.date!==curDate){
     var prevReward=store.today.earnedReward||'';
-    store.today={date:curDate,checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:prevReward,frozen:false};
+    store.today={date:curDate,checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false,earnedReward:prevReward};
     save(store);
   }
 }
@@ -530,6 +557,7 @@ function renderRankHero(){
   document.getElementById('totalExpDisp').textContent=num(store.totalExp);
   document.getElementById('totalExpDisp').style.color=r.color;
   document.getElementById('toNextDisp').textContent=num(r.max-store.totalExp);
+  document.getElementById('penaltiesDisp').textContent=store.penalties||0;
   document.getElementById('freezesDisp').textContent=(store.freezes||0)+'/2';
 }
 
@@ -577,38 +605,27 @@ function saveNote(){
   save(store);
 }
 
-/* STREAK FREEZE SYSTEM */
-function openFreezeModal(){
-  if(store.today.isSaved){
-    alert("Day is already finished and sealed!");
-    return;
+/* PUNISHMENT SYSTEM */
+function checkPunishment(){
+  var b=document.getElementById('punishBanner');
+  if(store.punishment&&store.punishment.active){
+    b.classList.add('show');
+    document.getElementById('punishMeta').textContent=store.punishment.missed+' habit(s) missed — Penalty Quest Active';
+    document.getElementById('punishTask').textContent='- '+store.punishment.task+' -';
+  }else{
+    b.classList.remove('show');
   }
-  if((store.freezes||0)<=0){
-    alert("No Freeze Shields available! Earn +1 Shield for every 7 clean PMO days.");
-    return;
-  }
-  document.getElementById('freezeOverlay').classList.add('show');
 }
-function confirmUseFreeze(){
-  document.getElementById('freezeOverlay').classList.remove('show');
-  if((store.freezes||0)<=0) return;
-  store.freezes--;
-  store.today.isSaved=true;
-  store.today.frozen=true;
-  store.today.note=(document.getElementById('noteBox').value||'')+" [🛡️ Streak Freeze Shield Used]";
-
-  var idx=store.history.findIndex(h=>h.date===store.today.date);
-  if(idx>=0)store.history[idx]=JSON.parse(JSON.stringify(store.today));
-  else store.history.unshift(JSON.parse(JSON.stringify(store.today)));
-
+function confirmPunishComplete(){
+  document.getElementById('punishConfirmOverlay').classList.remove('show');
+  if(!store.punishment) return;
+  store.punishment.active=false;
+  applyExp(300,'Punishment Cleared! +300 EXP 🔥');
+  checkPunishment();
   save(store);
-  showPop(0,'SHIELD ACTIVE! 🛡️','#00d9ff');
-  updateSaveButtonState();
-  renderRankHero();
-  renderHistory();
 }
 
-/* CUSTOM REWARDS INVENTORY */
+/* CUSTOM REWARDS */
 function renderCustomRewards(){
   var list=document.getElementById('customRewardList');
   if(!store.rewards||!store.rewards.length){
@@ -671,7 +688,7 @@ function claimUrgeDefeat(){
   applyExp(150,'Urge Slain! +150 EXP 🔥');
 }
 
-/* TRIAL & SAVE */
+/* TRIAL, DISCIPLINE & PENALTY ISSUANCE */
 var trialAnswers={1:false,2:false,3:false};
 var stagedReward='';
 function openHunterTrial(){
@@ -681,7 +698,20 @@ function openHunterTrial(){
   }
   trialAnswers={1:false,2:false,3:false};
   [1,2,3].forEach(i=>document.getElementById('tq'+i).classList.remove('selected'));
-  document.getElementById('trialRewardBox').style.display='none';
+
+  var checkedMap=store.today.checked||{};
+  var missedCount=HABITS.filter(h=>!checkedMap[h.id]).length;
+  var warnBox=document.getElementById('trialMissedWarning');
+  var rewardBox=document.getElementById('trialRewardBox');
+
+  if(missedCount>0){
+    warnBox.style.display='block';
+    document.getElementById('missedWarningText').textContent=missedCount+' habit(s) missed. A penalty quest will be assigned!';
+    rewardBox.style.display='none';
+  }else{
+    warnBox.style.display='none';
+  }
+
   document.getElementById('trialOverlay').classList.add('show');
 }
 function toggleTrialQ(id){
@@ -690,7 +720,10 @@ function toggleTrialQ(id){
   if(trialAnswers[id])el.classList.add('selected');
   else el.classList.remove('selected');
 
-  if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]){
+  var checkedMap=store.today.checked||{};
+  var missedCount=HABITS.filter(h=>!checkedMap[h.id]).length;
+
+  if(missedCount===0 && trialAnswers[1] && trialAnswers[2] && trialAnswers[3]){
     var pool=(store.rewards&&store.rewards.length)?store.rewards:DEFAULT_REWARDS;
     stagedReward=pool[Math.floor(Math.random()*pool.length)];
     document.getElementById('rewardText').textContent=stagedReward;
@@ -707,21 +740,28 @@ function finalizeTrialAndSave(){
   }
 
   var checkedMap=store.today.checked||{};
-  var doneCount=HABITS.filter(h=>!!checkedMap[h.id]).length;
+  var missedCount=HABITS.filter(h=>!checkedMap[h.id]).length;
   
-  if(doneCount===HABITS.length&&!store.today.perfectAwarded){
-    store.today.perfectAwarded=true;
-    applyExp(200,'Perfect Day! +200 EXP Bonus 🔥');
+  if(missedCount===0){
+    if(!store.today.perfectAwarded){
+      store.today.perfectAwarded=true;
+      applyExp(200,'Perfect Day! +200 EXP Bonus 🔥');
+    }
+    if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]&&!store.today.trialAwarded){
+      store.today.trialAwarded=true;
+      applyExp(250,'Trial Mastered! +250 EXP ⚔️');
+    }
+    var pool=(store.rewards&&store.rewards.length)?store.rewards:DEFAULT_REWARDS;
+    store.today.earnedReward=stagedReward||pool[0];
+  }else{
+    // Penalty issued for incomplete habits
+    store.penalties=(store.penalties||0)+1;
+    var pool=missedCount===1?P1:missedCount<=3?P2:missedCount<=5?P3:P4;
+    store.punishment={active:true,task:rnd(pool),missed:missedCount,date:todayKey()};
+    store.today.earnedReward='No reward: Penalty quest issued.';
   }
 
-  if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]&&!store.today.trialAwarded){
-    store.today.trialAwarded=true;
-    applyExp(250,'Trial Mastered! +250 EXP ⚔️');
-  }
-
-  var pool=(store.rewards&&store.rewards.length)?store.rewards:DEFAULT_REWARDS;
   store.today.isSaved=true;
-  store.today.earnedReward=stagedReward||pool[0];
   store.today.note=document.getElementById('noteBox').value;
 
   var idx=store.history.findIndex(h=>h.date===store.today.date);
@@ -733,6 +773,8 @@ function finalizeTrialAndSave(){
 
   updateSaveButtonState();
   renderRewardCard();
+  checkPunishment();
+  renderRankHero();
   renderHistory();
   renderStruggles();
 }
@@ -740,7 +782,7 @@ function finalizeTrialAndSave(){
 function updateSaveButtonState(){
   var btn=document.getElementById('saveDayBtn');
   if(btn&&store.today.isSaved){
-    btn.textContent=store.today.frozen?'🛡️ Day Shielded & Frozen':'🔒 Day Completed & Sealed';
+    btn.textContent='🔒 Day Completed & Sealed';
     btn.style.borderColor='var(--b)';
     btn.style.color='var(--m)';
     btn.style.cursor='not-allowed';
@@ -854,7 +896,7 @@ function renderStruggles(){
     '</div>';
 
   statsEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Overall Stats</div>'+
-    [["Days Saved",hist.length],["Available Shields",(store.freezes||0)+"/2"],["Relapse Resets",store.pmo.resets||0],["Best PMO Streak",(store.pmo&&store.pmo.best||0)+" days"],["Total EXP",num(store.totalExp||0)]].map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:#39ff14;font-weight:700;">'+e[1]+'</span></div>').join('')+'</div>';
+    [["Days Saved",hist.length],["Total Penalties",store.penalties||0],["Available Shields",(store.freezes||0)+"/2"],["Relapse Resets",store.pmo.resets||0],["Best PMO Streak",(store.pmo&&store.pmo.best||0)+" days"],["Total EXP",num(store.totalExp||0)]].map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:#39ff14;font-weight:700;">'+e[1]+'</span></div>').join('')+'</div>';
 }
 
 function renderHistory(){
@@ -863,15 +905,15 @@ function renderHistory(){
   if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">No history yet. Take the trial to save days!</div>';return;}
   el.innerHTML=hist.map(day=>{
     var done=HABITS.filter(h=>!!(day.checked||{})[h.id]).length;
-    var c=day.frozen?'#00d9ff':(done===HABITS.length?'#39ff14':done>=4?'#ffd600':'#ff3c3c');
+    var c=done===HABITS.length?'#39ff14':done>=4?'#ffd600':'#ff3c3c';
     return '<div style="background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:10px;">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'+c+';">'+(day.frozen?'🛡️ FROZEN':done+'/'+HABITS.length)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:monospace;font-size:10px;color:#39ff14;letter-spacing:1.5px;">'+day.date+'</span><span style="font-size:18px;font-weight:900;color:'+c+';">'+done+'/'+HABITS.length+'</span></div>'+
       '<div>'+HABITS.map(h=>{
         var d=!!(day.checked||{})[h.id];
         var name=h.text.replace(/^.\s/,'').split(' ').slice(0,2).join(' ');
         return '<span class="pill '+(d?'ok':'no')+'">'+name+'</span>';
       }).join('')+'</div>'+
-      (day.earnedReward?'<div style="font-size:11px;color:var(--g);margin-top:6px;font-weight:700;">🎁 Reward: '+day.earnedReward+'</div>':'')+
+      (day.earnedReward?'<div style="font-size:11px;color:var(--g);margin-top:6px;font-weight:700;">🎁 Status: '+day.earnedReward+'</div>':'')+
       (day.note?'<div style="font-size:11px;color:var(--m);font-style:italic;margin-top:8px;border-top:1px solid var(--b);padding-top:8px;">"'+day.note+'"</div>':'')+
       '</div>';
   }).join('');
@@ -917,7 +959,6 @@ function addPmoDay(){
   store.pmo.days++;
   if(store.pmo.days>store.pmo.best)store.pmo.best=store.pmo.days;
 
-  // Award +1 streak freeze for every 7 days clean (max 2)
   if(store.pmo.days%7===0 && (store.freezes||0)<2){
     store.freezes=(store.freezes||0)+1;
     showPop(0,'SHIELD EARNED! 🛡️','#00d9ff');
@@ -932,8 +973,30 @@ function addPmoDay(){
 
 function showPmoConfirm(){
   var cur=store.pmo&&store.pmo.days||0;
-  document.getElementById('pmoConfirmText').textContent=cur<5?'You are at '+cur+' days. Resetting costs -1100 EXP. Identify the trigger below to protect next streak.':'You held '+cur+' days. Resetting costs -200 EXP. Take accountability.';
+  document.getElementById('pmoConfirmText').textContent=cur<5?'You are at '+cur+' days. Resetting costs -1100 EXP. Take accountability.':'You held '+cur+' days. Resetting costs -200 EXP. Take accountability.';
+  
+  var sBox=document.getElementById('shieldAvailableBox');
+  if((store.freezes||0)>0){
+    sBox.style.display='block';
+  }else{
+    sBox.style.display='none';
+  }
   document.getElementById('pmoOverlay').classList.add('show');
+}
+
+function absorbRelapseWithShield(){
+  if((store.freezes||0)<=0) return;
+  store.freezes--;
+  var trigger=document.getElementById('pmoTrigger').value;
+  if(!store.pmo.triggers)store.pmo.triggers=[];
+  store.pmo.triggers.unshift({trigger:trigger+" [🛡️ Shield Used]",date:todayKey()});
+
+  save(store);
+  document.getElementById('pmoOverlay').classList.remove('show');
+  showPop(0,'STREAK SAVED! 🛡️','#00d9ff');
+  renderPmo();
+  renderRankHero();
+  renderStruggles();
 }
 
 function confirmRelapse(){
@@ -980,6 +1043,7 @@ function midnightCheck(){
     renderTodos();
     renderPmo();
     renderRewardCard();
+    checkPunishment();
     document.getElementById('noteBox').value='';
     document.getElementById('dateDisp').textContent=fmtDate();
     
@@ -1003,6 +1067,7 @@ renderTodos();
 renderPmo();
 renderRewardCard();
 renderCustomRewards();
+checkPunishment();
 updateSaveButtonState();
 
 setInterval(updateTimer,1000);
