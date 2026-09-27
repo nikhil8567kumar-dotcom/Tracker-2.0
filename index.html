@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NikRises — Discipline Engine</title>
 <style>
-:root{--bg:#0a0a0f;--s:#111118;--c:#16161e;--b:#252530;--g:#39ff14;--gd:rgba(57,255,20,0.1);--gg:rgba(57,255,20,0.35);--w:#efefef;--m:#666;--r:#ff3c3c;--y:#ffd600;--blue:#00d9ff;}
+:root{--bg:#0a0a0f;--s:#111118;--c:#16161e;--b:#232330;--g:#39ff14;--gd:rgba(57,255,20,0.1);--gg:rgba(57,255,20,0.35);--w:#efefef;--m:#777;--r:#ff3c3c;--y:#ffd600;--blue:#00d9ff;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-height:100vh;padding:18px 14px 100px;max-width:480px;margin:0 auto;}
+body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;padding:18px 14px 100px;max-width:480px;margin:0 auto;}
 .green{color:var(--g);}.red{color:var(--r);}.yellow{color:var(--y);}.blue{color:var(--blue);}
 .muted{color:var(--m);font-family:monospace;font-size:10px;letter-spacing:1px;}
-.surface{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:12px;}
-.seclbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin:12px 0 8px 2px;}
+.surface{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:12px;}
+.seclbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin:14px 0 8px 2px;}
 .tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex-shrink:0;padding:8px 13px;background:var(--s);border:1px solid var(--b);border-radius:8px;color:var(--m);font-family:monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
@@ -19,70 +19,76 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 .panel{display:none;}.panel.active{display:block;}
 .bar-bg{height:6px;background:var(--b);border-radius:99px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:99px;transition:width 0.5s;}
-.hrow{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;user-select:none;}
+.hrow{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:12px;padding:13px 14px;margin-bottom:8px;cursor:pointer;user-select:none;}
 .hrow.done{background:rgba(57,255,20,0.04);border-color:rgba(57,255,20,0.25);}
-.chk{width:20px;height:20px;border-radius:4px;border:2px solid var(--b);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;}
+.chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--b);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;}
 .hrow.done .chk{background:var(--g);border-color:var(--g);color:#000;box-shadow:0 0 8px var(--gg);}
 .htxt{flex:1;font-size:13px;font-weight:600;}
 .hrow.done .htxt{color:rgba(240,240,240,0.3);text-decoration:line-through;text-decoration-color:var(--g);}
-.badge{font-family:monospace;font-size:9px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:4px;padding:2px 6px;flex-shrink:0;}
-.rank-hero{background:var(--s);border-radius:14px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;}
-.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--c);border-radius:16px;padding:20px 28px;text-align:center;z-index:200;display:none;min-width:180px;}
+.badge{font-family:monospace;font-size:9px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:6px;padding:2px 6px;flex-shrink:0;}
+.rank-hero{background:var(--s);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;}
+.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--c);border-radius:18px;padding:20px 28px;text-align:center;z-index:200;display:none;min-width:180px;}
 .popup.show{display:block;}
 .levelup{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;}
 .levelup.show{display:flex;}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;}
 .overlay.show{display:flex;}
-.obox{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:22px 18px;width:100%;max-width:350px;text-align:center;max-height:90vh;overflow-y:auto;}
-.btn{padding:12px 16px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;width:100%;font-family:system-ui,sans-serif;border:none;margin-top:8px;}
+.obox{background:var(--c);border:1px solid var(--b);border-radius:16px;padding:22px 18px;width:100%;max-width:350px;text-align:center;max-height:90vh;overflow-y:auto;}
+.btn{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;width:100%;font-family:system-ui,sans-serif;border:none;margin-top:8px;}
 .btn-g{background:rgba(57,255,20,0.12);border:1px solid rgba(57,255,20,0.3)!important;color:var(--g);}
 .btn-r{background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3)!important;color:var(--r);}
 .btn-y{background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3)!important;color:var(--y);}
 .btn-blue{background:rgba(0,217,255,0.12);border:1px solid rgba(0,217,255,0.3)!important;color:var(--blue);}
 .btn-save{background:rgba(57,255,20,0.15);border:1px solid rgba(57,255,20,0.4)!important;color:var(--g);font-size:14px;}
 .btn-boss{background:rgba(255,60,60,0.16);border:1px solid rgba(255,60,60,0.4)!important;color:var(--r);font-family:monospace;font-size:11px;letter-spacing:1px;padding:10px;border-radius:8px;cursor:pointer;}
-.todo-row{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.todo-row{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
 .todo-row.done-t{background:rgba(57,255,20,0.04);border-color:rgba(57,255,20,0.2);}
 .del-btn{background:none;border:none;color:var(--m);font-size:16px;cursor:pointer;padding:2px 6px;}
-.inp{flex:1;background:var(--c);border:1px solid var(--b);border-radius:8px;padding:12px 14px;color:var(--w);font-family:system-ui,sans-serif;font-size:13px;outline:none;}
+.inp{flex:1;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 14px;color:var(--w);font-family:system-ui,sans-serif;font-size:13px;outline:none;}
 .inp:focus{border-color:rgba(57,255,20,0.3);}
-.add-btn{background:var(--g);border:none;border-radius:8px;width:44px;height:44px;font-size:22px;font-weight:700;color:#000;cursor:pointer;flex-shrink:0;}
-.rank-row{border-radius:10px;padding:14px;margin-bottom:8px;border:1px solid var(--b);}
-.pmo-btn{display:flex;flex-direction:column;align-items:center;background:var(--s);border:1.5px solid var(--b);border-radius:10px;padding:8px 12px;cursor:pointer;min-width:64px;}
+.add-btn{background:var(--g);border:none;border-radius:10px;width:44px;height:44px;font-size:22px;font-weight:700;color:#000;cursor:pointer;flex-shrink:0;}
+.rank-row{border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--b);}
+.pmo-btn{display:flex;flex-direction:column;align-items:center;background:var(--s);border:1.5px solid var(--b);border-radius:12px;padding:8px 12px;cursor:pointer;min-width:64px;}
 .note-ta{width:100%;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px;color:var(--w);font-family:system-ui,sans-serif;font-size:13px;resize:none;min-height:65px;outline:none;line-height:1.5;}
 .note-ta:focus{border-color:rgba(57,255,20,0.3);}
 .sbar-bg{flex:1;height:5px;background:var(--b);border-radius:99px;overflow:hidden;}
 .sbar-fill{height:100%;border-radius:99px;}
-.punish{background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.25);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:none;}
+.punish{background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.25);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:none;}
 .punish.show{display:block;}
-.trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;}
+.trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;}
 .trial-q.selected{border-color:var(--g);background:rgba(57,255,20,0.08);}
 
-/* PMO COMBAT GRID */
-.pmo-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0;}
-.pmo-cell{background:var(--c);border:1px solid var(--b);border-radius:6px;padding:6px 2px;text-align:center;}
+/* PMO GRID */
+.pmo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0;}
+.pmo-cell{background:var(--c);border:1px solid var(--b);border-radius:8px;padding:8px 2px;text-align:center;}
 .pmo-cell.clean{border-color:rgba(57,255,20,0.35);background:rgba(57,255,20,0.08);}
 .pmo-cell.relapse{border-color:rgba(255,60,60,0.4);background:rgba(255,60,60,0.12);}
 .pmo-cell.shielded{border-color:rgba(0,217,255,0.4);background:rgba(0,217,255,0.1);}
 .pmo-cell-date{font-family:monospace;font-size:8px;color:var(--m);margin-bottom:2px;}
 .pmo-cell-icon{font-size:12px;font-weight:900;}
 
-/* DISCIPLINE HISTORY LEDGER */
-.ledger-row{background:var(--c);border-left:3px solid var(--b);border-top:1px solid var(--b);border-right:1px solid var(--b);border-bottom:1px solid var(--b);padding:10px 12px;margin-bottom:8px;font-family:monospace;}
-.ledger-row.perfect{border-left-color:var(--g);}
-.ledger-row.partial{border-left-color:var(--y);}
-.ledger-row.failed{border-left-color:var(--r);}
-.ledger-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;}
-.ledger-habits{display:flex;gap:4px;flex-wrap:wrap;font-size:9px;}
-.ledger-h{padding:2px 5px;border-radius:3px;background:rgba(255,255,255,0.05);}
-.ledger-h.ok{background:rgba(57,255,20,0.15);color:var(--g);}
-.ledger-h.no{background:rgba(255,60,60,0.12);color:var(--r);}
-.ledger-note{font-size:10px;color:var(--m);margin-top:6px;border-top:1px dashed var(--b);padding-top:4px;font-style:italic;}
+/* DISCIPLINE BATTLE LOG */
+.battle-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:10px;}
+.battle-card.perfect{border-left:4px solid var(--g);}
+.battle-card.partial{border-left:4px solid var(--y);}
+.battle-card.breach{border-left:4px solid var(--r);}
+.battle-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.battle-date{font-family:monospace;font-size:12px;font-weight:800;color:var(--w);letter-spacing:1px;}
+.battle-status{font-family:monospace;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;}
+.battle-status.perfect{background:rgba(57,255,20,0.12);color:var(--g);border:1px solid rgba(57,255,20,0.3);}
+.battle-status.partial{background:rgba(255,214,0,0.1);color:var(--y);border:1px solid rgba(255,214,0,0.3);}
+.battle-status.breach{background:rgba(255,60,60,0.1);color:var(--r);border:1px solid rgba(255,60,60,0.3);}
+.battle-tags{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.battle-tag{font-size:11px;font-weight:600;padding:5px 8px;border-radius:6px;background:var(--c);display:flex;align-items:center;gap:6px;}
+.battle-tag.ok{color:var(--w);border-left:2px solid var(--g);}
+.battle-tag.no{color:var(--m);opacity:0.6;border-left:2px solid var(--r);text-decoration:line-through;}
+.battle-note{font-size:11px;color:var(--m);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid var(--b);}
 
-/* MONTHLY SUMMARY METRICS */
-.review-metric{text-align:center;padding:10px 8px;background:var(--c);border:1px solid var(--b);border-radius:8px;}
-.review-val{font-size:18px;font-weight:900;font-family:monospace;}
-.review-lbl{font-size:8px;color:var(--m);font-family:monospace;text-transform:uppercase;margin-top:2px;}
+/* REVIEW METRICS */
+.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.review-box{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 6px;text-align:center;}
+.review-num{font-size:20px;font-weight:900;font-family:monospace;}
+.review-lbl{font-size:8px;font-family:monospace;color:var(--m);text-transform:uppercase;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -200,7 +206,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     <div class="muted" style="margin-top:2px;">⚡ Solo Leveling Discipline Engine</div>
   </div>
   <div class="pmo-btn" onclick="addPmoDay()">
-    <div id="pmoDays" style="font-size:24px;color:var(--g);font-weight:900;line-height:1;">0</div>
+    <div id="pmoDays" style="font-size:24px;color:var(--g);font-weight:900;line-height:1;">4</div>
     <div style="font-family:monospace;font-size:7px;color:var(--m);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">PMO Free</div>
     <div style="font-size:8px;color:var(--g);font-family:monospace;margin-top:3px;opacity:0.7;">+ Day</div>
   </div>
@@ -288,33 +294,33 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <div id="todoList"></div>
 </div>
 
-<!-- BATTLE LOG (DISCIPLINE LEDGER STYLE) -->
+<!-- BATTLE LOG -->
 <div class="panel" id="panel-history">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-    <span class="seclbl" style="margin:0;">Tactical Service Record</span>
-    <span class="muted" id="ledgerCount">0 entries</span>
+    <span class="seclbl" style="margin:0;">Discipline Service Log</span>
+    <span class="muted" id="ledgerCount">0 days recorded</span>
   </div>
   <div id="historyLedger"></div>
 </div>
 
-<!-- MONTHLY REVIEW & ANALYTICS -->
+<!-- MONTHLY REVIEW -->
 <div class="panel" id="panel-monthly">
-  <div class="surface" style="padding:10px 14px;">
+  <div class="surface" style="padding:12px 14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span class="seclbl" style="margin:0;">Select Month</span>
+      <span class="seclbl" style="margin:0;">Monthly Analysis</span>
       <select id="monthSelect" class="inp" style="max-width:140px;padding:6px 10px;font-size:11px;" onchange="renderMonthlyReview()"></select>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;">
-    <div class="review-metric"><div class="review-val green" id="mHabitRate">0%</div><div class="review-lbl">Habit Discipline</div></div>
-    <div class="review-metric"><div class="review-val" id="mRankGrade" style="color:var(--y);">N/A</div><div class="review-lbl">Month Rating</div></div>
-    <div class="review-metric"><div class="review-val green" id="mCleanDays">0</div><div class="review-lbl">Clean Days</div></div>
-    <div class="review-metric"><div class="review-val red" id="mRelapses">0</div><div class="review-lbl">Relapses</div></div>
+  <div class="review-grid">
+    <div class="review-box"><div class="review-num green" id="mCleanDays">0</div><div class="review-lbl">Clean Days</div></div>
+    <div class="review-box"><div class="review-num red" id="mRelapses">0</div><div class="review-lbl">Slips</div></div>
+    <div class="review-box"><div class="review-num yellow" id="mHabitRate">0%</div><div class="review-lbl">Habit Score</div></div>
   </div>
 
   <div class="surface">
-    <div class="seclbl" style="margin-top:0;">Habit Weakest-Link Analysis</div>
+    <div class="seclbl" style="margin-top:0;">Habit Consistency Rank</div>
+    <div class="muted" style="margin-bottom:12px;">Worst-performing habits shown at top:</div>
     <div id="mHabitBreakdown"></div>
   </div>
 </div>
@@ -322,12 +328,12 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 <!-- PMO ENGINE -->
 <div class="panel" id="panel-pmo">
   <div class="surface" style="text-align:center;">
-    <div id="pmoDisplay" style="font-size:56px;font-weight:900;color:var(--g);text-shadow:0 0 20px var(--gg);line-height:1;">0</div>
+    <div id="pmoDisplay" style="font-size:56px;font-weight:900;color:var(--g);text-shadow:0 0 20px var(--gg);line-height:1;">4</div>
     <div class="muted" style="margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;">Days PMO Free</div>
-    <div id="hunterPmoTitle" style="font-family:monospace;font-size:11px;color:var(--y);margin-top:4px;letter-spacing:1px;font-weight:700;">UNINITIATED</div>
+    <div id="hunterPmoTitle" style="font-family:monospace;font-size:11px;color:var(--y);margin-top:4px;letter-spacing:1px;font-weight:700;">DOPAMINE DETOXIFIER</div>
     <div style="display:flex;justify-content:center;gap:26px;margin-top:12px;">
-      <div style="text-align:center;"><div id="pmoBest" style="font-size:20px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Best Streak</div></div>
-      <div style="text-align:center;"><div id="pmoResets" style="font-size:20px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Total Resets</div></div>
+      <div style="text-align:center;"><div id="pmoBest" style="font-size:20px;font-weight:900;">4</div><div class="muted" style="text-transform:uppercase;">Best Streak</div></div>
+      <div style="text-align:center;"><div id="pmoResets" style="font-size:20px;font-weight:900;">4</div><div class="muted" style="text-transform:uppercase;">Total Resets</div></div>
     </div>
     <button class="btn btn-g" onclick="addPmoDay()" style="margin-top:12px;">+ Add Clean Day (+100 to +500 EXP)</button>
     <button class="btn btn-boss" onclick="triggerUrgeProtocol()" style="margin-top:8px;width:100%;">⚔️ 3-Min Urge Protocol</button>
@@ -337,14 +343,14 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
   <div class="surface">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span class="seclbl" style="margin:0;">30-Day Combat Log</span>
-      <span class="muted">Live matrix</span>
+      <span class="muted">Live status</span>
     </div>
     <div class="pmo-grid" id="pmoCombatGrid"></div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;font-family:monospace;color:var(--m);">
       <span><span style="color:var(--g);">✓</span> Clean</span>
       <span><span style="color:var(--r);">💀</span> Relapse</span>
       <span><span style="color:var(--blue);">🛡️</span> Shield</span>
-      <span>— Unrecorded</span>
+      <span>— Unlogged</span>
     </div>
   </div>
 
@@ -366,13 +372,13 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 
 <script>
 const HABITS=[
-  {id:"affirmAM",code:"AFF-AM",text:"🌅 Morning affirmations + visualization"},
-  {id:"meditation",code:"MEDIT",text:"🧘 Morning meditation"},
-  {id:"workout",code:"TRAIN",text:"🏋️ Workout + Boxing done"},
-  {id:"reading",code:"STUDY",text:"📖 Daily reading done"},
-  {id:"talk",code:"SOCIAL",text:"💬 Real human interaction"},
-  {id:"income",code:"ACTION",text:"💰 One income / content action"},
-  {id:"affirmPM",code:"AFF-PM",text:"🌙 Night affirmations + visualization"},
+  {id:"affirmAM",short:"Affirm AM",text:"🌅 Morning affirmations + visualization"},
+  {id:"meditation",short:"Meditation",text:"🧘 Morning meditation"},
+  {id:"workout",short:"Workout/Box",text:"🏋️ Workout + Boxing done"},
+  {id:"reading",short:"Reading",text:"📖 Daily reading done"},
+  {id:"talk",short:"Human Talk",text:"💬 Real human interaction"},
+  {id:"income",short:"Income Action",text:"💰 One income / content action"},
+  {id:"affirmPM",short:"Affirm PM",text:"🌙 Night affirmations + visualization"},
 ];
 const RANKS=[
   {rank:"E",name:"Iron Hunter",color:"#888",bg:"rgba(136,136,136,0.08)",min:0,max:2000},
@@ -467,7 +473,7 @@ if(!store){
     penalties:0,
     freezes:0,
     punishment:null,
-    pmo:{days:0,best:3,resets:0,triggers:[],dailyLog:{}},
+    pmo:{days:4,best:4,resets:4,triggers:[],dailyLog:{}},
     today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false},
     history:[]
   };
@@ -477,7 +483,7 @@ if(!store){
 if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=11000;
 if(typeof store.freezes!=='number')store.freezes=0;
 if(typeof store.penalties!=='number')store.penalties=0;
-if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[],dailyLog:{}};
+if(!store.pmo)store.pmo={days:4,best:4,resets:4,triggers:[],dailyLog:{}};
 if(!store.pmo.triggers)store.pmo.triggers=[];
 if(!store.pmo.dailyLog)store.pmo.dailyLog={};
 if(!store.history)store.history=[];
@@ -485,13 +491,20 @@ if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQu
 if(!store.today.checked)store.today.checked={};
 if(!store.today.todos)store.today.todos=[];
 
-// Backfill dailyLog from existing history if empty
-if(Object.keys(store.pmo.dailyLog).length===0&&store.history.length>0){
-  store.history.forEach(h=>{
-    if(h.date) store.pmo.dailyLog[h.date]='clean';
-  });
-  save(store);
-}
+// EXACT CALIBRATION FOR DATES: 19, 20, 22, 23 (Clean)
+var yyyyMm="2026-09";
+store.pmo.dailyLog[yyyyMm+"-19"]="clean";
+store.pmo.dailyLog[yyyyMm+"-20"]="clean";
+store.pmo.dailyLog[yyyyMm+"-21"]="relapse";
+store.pmo.dailyLog[yyyyMm+"-22"]="clean";
+store.pmo.dailyLog[yyyyMm+"-23"]="clean";
+store.pmo.dailyLog[yyyyMm+"-24"]="relapse";
+store.pmo.dailyLog[yyyyMm+"-25"]="relapse";
+store.pmo.dailyLog[yyyyMm+"-26"]="relapse";
+store.pmo.days=4;
+store.pmo.best=4;
+store.pmo.resets=4;
+save(store);
 
 function checkDateRollover(){
   var curDate=todayKey();
@@ -809,37 +822,36 @@ function renderRanksPage(){
   document.getElementById('expGuide').innerHTML=EXP_GUIDE.map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:'+e[1]+';font-weight:700;">'+e[2]+'</span></div>').join('');
 }
 
-/* MILITARY-STYLE DISCIPLINE LEDGER */
+/* REBUILT TACTICAL BATTLE LOG */
 function renderHistoryLedger(){
   var hist=store.history||[];
   var el=document.getElementById('historyLedger');
   var countEl=document.getElementById('ledgerCount');
-  countEl.textContent=hist.length+' logged day(s)';
-  if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">No mission history recorded. Complete trials to build log.</div>';return;}
+  countEl.textContent=hist.length+' day(s) recorded';
+  if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">No completed trials saved yet.</div>';return;}
   
   el.innerHTML=hist.map(day=>{
     var done=HABITS.filter(h=>!!(day.checked||{})[h.id]).length;
-    var statusClass=done===HABITS.length?'perfect':done>=4?'partial':'failed';
-    var statusText=done===HABITS.length?'[SEALED 7/7]':done>=4?'[PARTIAL '+done+'/7]':'[BREACH '+done+'/7]';
-    var statusColor=done===HABITS.length?'var(--g)':done>=4?'var(--y)':'var(--r)';
+    var statusClass=done===HABITS.length?'perfect':done>=4?'partial':'breach';
+    var statusText=done===HABITS.length?'7/7 FLAWLESS':done>=4?done+'/7 PARTIAL':done+'/7 BREACH';
 
-    return '<div class="ledger-row '+statusClass+'">'+
-      '<div class="ledger-head">'+
-        '<span>> '+day.date+'</span>'+
-        '<span style="color:'+statusColor+';font-weight:800;">'+statusText+'</span>'+
+    return '<div class="battle-card '+statusClass+'">'+
+      '<div class="battle-header">'+
+        '<span class="battle-date">'+day.date+'</span>'+
+        '<span class="battle-status '+statusClass+'">'+statusText+'</span>'+
       '</div>'+
-      '<div class="ledger-habits">'+
+      '<div class="battle-tags">'+
         HABITS.map(h=>{
           var d=!!(day.checked||{})[h.id];
-          return '<span class="ledger-h '+(d?'ok':'no')+'">'+h.code+':'+(d?'✓':'✕')+'</span>';
+          return '<div class="battle-tag '+(d?'ok':'no')+'">'+(d?'✓':'✕')+' '+h.short+'</div>';
         }).join('')+
       '</div>'+
-      (day.note?'<div class="ledger-note">Log: "'+day.note+'"</div>':'')+
+      (day.note?'<div class="battle-note">"'+day.note+'"</div>':'')+
     '</div>';
   }).join('');
 }
 
-/* MONTHLY REVIEW ENGINE */
+/* SIMPLIFIED MONTHLY REVIEW */
 function initMonthOptions(){
   var sel=document.getElementById('monthSelect');
   if(!sel) return;
@@ -879,20 +891,7 @@ function renderMonthlyReview(){
   var habitPct=totalHabitsPossible>0?Math.round((totalHabitsDone/totalHabitsPossible)*100):0;
   document.getElementById('mHabitRate').textContent=habitPct+'%';
 
-  // Monthly Grade
-  var grade='N/A';
-  var gradeColor='var(--m)';
-  if(monthDays.length>0){
-    if(habitPct>=90){grade='S-RANK';gradeColor='var(--g)';}
-    else if(habitPct>=75){grade='A-RANK';gradeColor='var(--y)';}
-    else if(habitPct>=55){grade='B-RANK';gradeColor='var(--w)';}
-    else{grade='CRITICAL';gradeColor='var(--r)';}
-  }
-  var gradeEl=document.getElementById('mRankGrade');
-  gradeEl.textContent=grade;
-  gradeEl.style.color=gradeColor;
-
-  // Monthly PMO
+  // Month PMO clean & relapses
   var pmoLogs=store.pmo.dailyLog||{};
   var cleanCount=0;
   var relapseCount=0;
@@ -905,23 +904,23 @@ function renderMonthlyReview(){
   document.getElementById('mCleanDays').textContent=cleanCount;
   document.getElementById('mRelapses').textContent=relapseCount;
 
-  // Habit breakdown
+  // Weakest Habits Breakdown
   var bd=document.getElementById('mHabitBreakdown');
   if(monthDays.length===0){
-    bd.innerHTML='<div class="muted" style="text-align:center;padding:12px 0;">No records logged for '+selectedMonth+'.</div>';
+    bd.innerHTML='<div class="muted" style="text-align:center;padding:12px 0;">Save at least 1 day in '+selectedMonth+' to view rankings.</div>';
   }else{
     var sorted=HABITS.map(h=>{
       var count=habitCounts[h.id]||0;
       var rate=Math.round((count/monthDays.length)*100);
-      return {text:h.text.replace(/^.\s/,''),rate:rate};
+      return {text:h.short,rate:rate};
     }).sort((a,b)=>a.rate-b.rate);
 
     bd.innerHTML=sorted.map(h=>{
       var c=h.rate>=75?'#39ff14':h.rate>=50?'#ffd600':'#ff3c3c';
       return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+
-        '<div style="font-size:11px;font-weight:700;color:var(--w);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+h.text+'</div>'+
+        '<div style="font-size:11px;font-weight:700;color:var(--w);width:100px;">'+h.text+'</div>'+
         '<div class="sbar-bg"><div class="sbar-fill" style="width:'+h.rate+'%;background:'+c+';"></div></div>'+
-        '<div style="font-family:monospace;font-size:9px;color:var(--m);width:30px;text-align:right;">'+h.rate+'%</div>'+
+        '<div style="font-family:monospace;font-size:9px;color:var(--m);width:32px;text-align:right;">'+h.rate+'%</div>'+
       '</div>';
     }).join('');
   }
@@ -949,7 +948,7 @@ function renderPmoGrid(){
   if(!g) return;
   var log=store.pmo.dailyLog||{};
   var cells='';
-  for(let i=29;i>=0;i--){
+  for(let i=27;i>=0;i--){
     var d=new Date();
     d.setDate(d.getDate()-i);
     var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
