@@ -60,6 +60,15 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
 .punish.show{display:block;}
 .trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer;}
 .trial-q.selected{border-color:var(--g);background:rgba(57,255,20,0.08);}
+
+/* PMO COMBAT GRID STYLING */
+.pmo-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0;}
+.pmo-cell{background:var(--c);border:1px solid var(--b);border-radius:8px;padding:8px 4px;text-align:center;}
+.pmo-cell.clean{border-color:rgba(57,255,20,0.35);background:rgba(57,255,20,0.08);}
+.pmo-cell.relapse{border-color:rgba(255,60,60,0.4);background:rgba(255,60,60,0.12);}
+.pmo-cell.shielded{border-color:rgba(0,217,255,0.4);background:rgba(0,217,255,0.1);}
+.pmo-cell-date{font-family:monospace;font-size:8px;color:var(--m);margin-bottom:2px;}
+.pmo-cell-icon{font-size:13px;font-weight:900;}
 </style>
 </head>
 <body>
@@ -305,6 +314,21 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,sans-serif;min-he
     <button class="btn btn-r" onclick="showPmoConfirm()">⚠ I relapsed — reset streak</button>
   </div>
 
+  <!-- VISUAL COMBAT CALENDAR (30 DAYS) -->
+  <div class="surface">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="seclbl" style="margin:0;">30-Day Combat Log</span>
+      <span class="muted">Live status</span>
+    </div>
+    <div class="pmo-grid" id="pmoCombatGrid"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;font-family:monospace;color:var(--m);">
+      <span><span style="color:var(--g);">✓</span> Clean</span>
+      <span><span style="color:var(--r);">💀</span> Relapse</span>
+      <span><span style="color:var(--blue);">🛡️</span> Shielded</span>
+      <span>— None</span>
+    </div>
+  </div>
+
   <div class="seclbl">PMO Reboot Milestones</div>
   <div id="pmoMilestoneList"></div>
 
@@ -434,7 +458,7 @@ if(!store){
     penalties:0,
     freezes:0,
     punishment:null,
-    pmo:{days:0,best:3,resets:0,triggers:[]},
+    pmo:{days:0,best:3,resets:0,triggers:[],dailyLog:{}},
     today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false},
     history:[]
   };
@@ -444,8 +468,9 @@ if(!store){
 if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=11000;
 if(typeof store.freezes!=='number')store.freezes=0;
 if(typeof store.penalties!=='number')store.penalties=0;
-if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
+if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[],dailyLog:{}};
 if(!store.pmo.triggers)store.pmo.triggers=[];
+if(!store.pmo.dailyLog)store.pmo.dailyLog={};
 if(!store.history)store.history=[];
 if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
 if(!store.today.checked)store.today.checked={};
@@ -787,9 +812,11 @@ function renderStruggles(){
   }
 
   var trigs=store.pmo.triggers||[];
-  trigEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Recent Relapse Triggers</div>'+
+  trigEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Complete Relapse Trigger History ('+trigs.length+')</div>'+
     (trigs.length===0?'<div class="muted">No relapse triggers logged. Clean hunter.</div>':
-    trigs.slice(0,5).map(t=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--r);">'+t.trigger+'</span><span style="font-family:monospace;font-size:9px;color:var(--m);">'+t.date+'</span></div>').join(''))+
+    '<div style="max-height:220px;overflow-y:auto;padding-right:4px;">'+
+    trigs.map(t=>'<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:11px;color:var(--r);">'+t.trigger+'</span><span style="font-family:monospace;font-size:9px;color:var(--m);">'+t.date+'</span></div>').join('')+
+    '</div>')+
     '</div>';
 
   statsEl.innerHTML='<div class="surface" style="margin-top:10px;"><div class="seclbl" style="margin-top:0;">Overall Stats</div>'+
@@ -832,6 +859,27 @@ function getHunterTitle(days){
   return "UNINITIATED";
 }
 
+function renderPmoGrid(){
+  var g=document.getElementById('pmoCombatGrid');
+  if(!g) return;
+  var log=store.pmo.dailyLog||{};
+  var cells='';
+  for(let i=29;i>=0;i--){
+    var d=new Date();
+    d.setDate(d.getDate()-i);
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var status=log[key];
+    var dayNum=d.getDate();
+    var cls='';
+    var icon='—';
+    if(status==='clean'){cls='clean';icon='✓';}
+    else if(status==='relapse'){cls='relapse';icon='💀';}
+    else if(status==='shielded'){cls='shielded';icon='🛡️';}
+    cells+='<div class="pmo-cell '+cls+'"><div class="pmo-cell-date">'+dayNum+'</div><div class="pmo-cell-icon">'+icon+'</div></div>';
+  }
+  g.innerHTML=cells;
+}
+
 function renderPmo(){
   var p=store.pmo||{days:0,best:0,resets:0};
   document.getElementById('pmoDays').textContent=p.days||0;
@@ -839,6 +887,8 @@ function renderPmo(){
   document.getElementById('pmoBest').textContent=(p.best||0)+' days';
   document.getElementById('pmoResets').textContent=p.resets||0;
   document.getElementById('hunterPmoTitle').textContent=getHunterTitle(p.days||0);
+
+  renderPmoGrid();
 
   var mBox=document.getElementById('pmoMilestoneList');
   mBox.innerHTML=PMO_MILESTONES.map(m=>{
@@ -851,9 +901,12 @@ function renderPmo(){
 }
 
 function addPmoDay(){
-  if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[]};
+  if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[],dailyLog:{}};
   store.pmo.days++;
   if(store.pmo.days>store.pmo.best)store.pmo.best=store.pmo.days;
+
+  if(!store.pmo.dailyLog)store.pmo.dailyLog={};
+  store.pmo.dailyLog[todayKey()]='clean';
 
   if(store.pmo.days%7===0 && (store.freezes||0)<2){
     store.freezes=(store.freezes||0)+1;
@@ -887,6 +940,9 @@ function absorbRelapseWithShield(){
   if(!store.pmo.triggers)store.pmo.triggers=[];
   store.pmo.triggers.unshift({trigger:trigger+" [🛡️ Shield Used]",date:todayKey()});
 
+  if(!store.pmo.dailyLog)store.pmo.dailyLog={};
+  store.pmo.dailyLog[todayKey()]='shielded';
+
   save(store);
   document.getElementById('pmoOverlay').classList.remove('show');
   showPop(0,'STREAK SAVED! 🛡️','#00d9ff');
@@ -904,6 +960,9 @@ function confirmRelapse(){
   store.pmo.days=0;
   if(!store.pmo.triggers)store.pmo.triggers=[];
   store.pmo.triggers.unshift({trigger:trigger,date:todayKey()});
+
+  if(!store.pmo.dailyLog)store.pmo.dailyLog={};
+  store.pmo.dailyLog[todayKey()]='relapse';
 
   applyExp(-penalty,cur<5?'-'+penalty+' EXP Relapsed early':'-'+penalty+' EXP Rise again');
   renderPmo();
