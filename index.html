@@ -206,7 +206,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
     <div class="muted" style="margin-top:2px;">⚡ Solo Leveling Discipline Engine</div>
   </div>
   <div class="pmo-btn" onclick="addPmoDay()">
-    <div id="pmoDays" style="font-size:24px;color:var(--g);font-weight:900;line-height:1;">4</div>
+    <div id="pmoDays" style="font-size:24px;color:var(--m);font-weight:900;line-height:1;">0</div>
     <div style="font-family:monospace;font-size:7px;color:var(--m);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">PMO Free</div>
     <div style="font-size:8px;color:var(--g);font-family:monospace;margin-top:3px;opacity:0.7;">+ Day</div>
   </div>
@@ -221,18 +221,18 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
       <div id="rankName" style="font-size:17px;font-weight:700;color:var(--w);">Silver Hunter</div>
       <div style="display:flex;gap:6px;align-items:center;margin-top:2px;justify-content:flex-end;">
         <div class="muted">HUNTER RANK</div>
-        <div id="levelDisp" style="font-family:monospace;font-size:10px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:4px;padding:2px 6px;">LVL 11</div>
+        <div id="levelDisp" style="font-family:monospace;font-size:10px;color:var(--g);background:var(--gd);border:1px solid rgba(57,255,20,0.2);border-radius:4px;padding:2px 6px;">LVL 8</div>
       </div>
     </div>
   </div>
   <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
     <span class="muted">EXP Progress</span>
-    <span id="expFraction" style="font-family:monospace;font-size:11px;color:var(--w);font-weight:700;">3,000 / 17,000</span>
+    <span id="expFraction" style="font-family:monospace;font-size:11px;color:var(--w);font-weight:700;">0 / 17,000</span>
   </div>
-  <div class="bar-bg"><div id="expBar" class="bar-fill" style="width:17.6%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
+  <div class="bar-bg"><div id="expBar" class="bar-fill" style="width:0%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
   <div style="display:flex;justify-content:space-between;margin-top:12px;">
-    <div style="text-align:center;"><div id="totalExpDisp" style="font-size:16px;font-weight:900;color:var(--g);">11,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Total EXP</div></div>
-    <div style="text-align:center;"><div id="toNextDisp" style="font-size:16px;font-weight:900;color:var(--w);">14,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">To Next</div></div>
+    <div style="text-align:center;"><div id="totalExpDisp" style="font-size:16px;font-weight:900;color:var(--g);">8,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Total EXP</div></div>
+    <div style="text-align:center;"><div id="toNextDisp" style="font-size:16px;font-weight:900;color:var(--w);">17,000</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">To Next</div></div>
     <div style="text-align:center;"><div id="penaltiesDisp" style="font-size:16px;font-weight:900;color:var(--r);">0</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Penalties</div></div>
     <div style="text-align:center;"><div id="freezesDisp" style="font-size:16px;font-weight:900;color:var(--blue);">0/2</div><div style="font-family:monospace;font-size:8px;color:var(--m);text-transform:uppercase;">Shields</div></div>
   </div>
@@ -328,12 +328,12 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 <!-- PMO ENGINE -->
 <div class="panel" id="panel-pmo">
   <div class="surface" style="text-align:center;">
-    <div id="pmoDisplay" style="font-size:56px;font-weight:900;color:var(--g);text-shadow:0 0 20px var(--gg);line-height:1;">4</div>
+    <div id="pmoDisplay" style="font-size:56px;font-weight:900;color:var(--m);line-height:1;">0</div>
     <div class="muted" style="margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;">Days PMO Free</div>
-    <div id="hunterPmoTitle" style="font-family:monospace;font-size:11px;color:var(--y);margin-top:4px;letter-spacing:1px;font-weight:700;">DOPAMINE DETOXIFIER</div>
+    <div id="hunterPmoTitle" style="font-family:monospace;font-size:11px;color:var(--m);margin-top:4px;letter-spacing:1px;font-weight:700;">UNINITIATED</div>
     <div style="display:flex;justify-content:center;gap:26px;margin-top:12px;">
-      <div style="text-align:center;"><div id="pmoBest" style="font-size:20px;font-weight:900;">4</div><div class="muted" style="text-transform:uppercase;">Best Streak</div></div>
-      <div style="text-align:center;"><div id="pmoResets" style="font-size:20px;font-weight:900;">4</div><div class="muted" style="text-transform:uppercase;">Total Resets</div></div>
+      <div style="text-align:center;"><div id="pmoBest" style="font-size:20px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Best Streak</div></div>
+      <div style="text-align:center;"><div id="pmoResets" style="font-size:20px;font-weight:900;">0</div><div class="muted" style="text-transform:uppercase;">Total Resets</div></div>
     </div>
     <button class="btn btn-g" onclick="addPmoDay()" style="margin-top:12px;">+ Add Clean Day (+100 to +500 EXP)</button>
     <button class="btn btn-boss" onclick="triggerUrgeProtocol()" style="margin-top:8px;width:100%;">⚔️ 3-Min Urge Protocol</button>
@@ -342,15 +342,15 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 
   <div class="surface">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span class="seclbl" style="margin:0;">30-Day Combat Log</span>
+      <span class="seclbl" style="margin:0;">Combat Calendar</span>
       <span class="muted">Live status</span>
     </div>
     <div class="pmo-grid" id="pmoCombatGrid"></div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;font-family:monospace;color:var(--m);">
       <span><span style="color:var(--g);">✓</span> Clean</span>
-      <span><span style="color:var(--r);">💀</span> Relapse</span>
+      <span><span style="color:var(--r);">💀</span> Slip</span>
       <span><span style="color:var(--blue);">🛡️</span> Shield</span>
-      <span>— Unlogged</span>
+      <span>— Fresh</span>
     </div>
   </div>
 
@@ -434,7 +434,7 @@ const EXP_GUIDE=[
   ["PMO relapse 5d+","#ff3c3c","-200"]
 ];
 
-const KEY='nikrises_clean_v3';
+const KEY='nikrises_clean_v4_fresh';
 
 function load(){
   try{
@@ -466,45 +466,31 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
+// INITIALIZE FRESH SYSTEM DATA (8000 EXP, Rank C Base, Clean Slate)
 var store=load();
 if(!store){
   store={
-    totalExp:11000,
+    totalExp:8000,
     penalties:0,
     freezes:0,
     punishment:null,
-    pmo:{days:4,best:4,resets:4,triggers:[],dailyLog:{}},
+    pmo:{days:0,best:0,resets:0,triggers:[],dailyLog:{}},
     today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false},
     history:[]
   };
   save(store);
 }
 
-if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=11000;
+if(typeof store.totalExp!=='number'||isNaN(store.totalExp))store.totalExp=8000;
 if(typeof store.freezes!=='number')store.freezes=0;
 if(typeof store.penalties!=='number')store.penalties=0;
-if(!store.pmo)store.pmo={days:4,best:4,resets:4,triggers:[],dailyLog:{}};
+if(!store.pmo)store.pmo={days:0,best:0,resets:0,triggers:[],dailyLog:{}};
 if(!store.pmo.triggers)store.pmo.triggers=[];
 if(!store.pmo.dailyLog)store.pmo.dailyLog={};
 if(!store.history)store.history=[];
 if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
 if(!store.today.checked)store.today.checked={};
 if(!store.today.todos)store.today.todos=[];
-
-// EXACT CALIBRATION FOR DATES: 19, 20, 22, 23 (Clean)
-var yyyyMm="2026-09";
-store.pmo.dailyLog[yyyyMm+"-19"]="clean";
-store.pmo.dailyLog[yyyyMm+"-20"]="clean";
-store.pmo.dailyLog[yyyyMm+"-21"]="relapse";
-store.pmo.dailyLog[yyyyMm+"-22"]="clean";
-store.pmo.dailyLog[yyyyMm+"-23"]="clean";
-store.pmo.dailyLog[yyyyMm+"-24"]="relapse";
-store.pmo.dailyLog[yyyyMm+"-25"]="relapse";
-store.pmo.dailyLog[yyyyMm+"-26"]="relapse";
-store.pmo.days=4;
-store.pmo.best=4;
-store.pmo.resets=4;
-save(store);
 
 function checkDateRollover(){
   var curDate=todayKey();
@@ -822,13 +808,13 @@ function renderRanksPage(){
   document.getElementById('expGuide').innerHTML=EXP_GUIDE.map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:'+e[1]+';font-weight:700;">'+e[2]+'</span></div>').join('');
 }
 
-/* REBUILT TACTICAL BATTLE LOG */
+/* BATTLE LOG */
 function renderHistoryLedger(){
   var hist=store.history||[];
   var el=document.getElementById('historyLedger');
   var countEl=document.getElementById('ledgerCount');
   countEl.textContent=hist.length+' day(s) recorded';
-  if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">No completed trials saved yet.</div>';return;}
+  if(!hist.length){el.innerHTML='<div style="font-family:monospace;font-size:11px;color:var(--m);text-align:center;padding:30px 0;">Clean slate. Complete trials to build log.</div>';return;}
   
   el.innerHTML=hist.map(day=>{
     var done=HABITS.filter(h=>!!(day.checked||{})[h.id]).length;
@@ -855,15 +841,8 @@ function renderHistoryLedger(){
 function initMonthOptions(){
   var sel=document.getElementById('monthSelect');
   if(!sel) return;
-  var monthsSet=new Set();
   var curM=todayKey().substring(0,7);
-  monthsSet.add(curM);
-
-  (store.history||[]).forEach(h=>{if(h.date)monthsSet.add(h.date.substring(0,7));});
-  Object.keys(store.pmo.dailyLog||{}).forEach(d=>{monthsSet.add(d.substring(0,7));});
-
-  var arr=Array.from(monthsSet).sort().reverse();
-  sel.innerHTML=arr.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  sel.innerHTML='<option value="'+curM+'">'+curM+'</option>';
 }
 
 function renderMonthlyReview(){
@@ -871,11 +850,9 @@ function renderMonthlyReview(){
   if(!sel) return;
   var selectedMonth=sel.value||todayKey().substring(0,7);
 
-  // Month days & habits
   var monthDays=(store.history||[]).filter(h=>h.date&&h.date.startsWith(selectedMonth));
   var totalHabitsPossible=monthDays.length*HABITS.length;
   var totalHabitsDone=0;
-
   var habitCounts={};
   HABITS.forEach(h=>habitCounts[h.id]=0);
 
@@ -891,7 +868,6 @@ function renderMonthlyReview(){
   var habitPct=totalHabitsPossible>0?Math.round((totalHabitsDone/totalHabitsPossible)*100):0;
   document.getElementById('mHabitRate').textContent=habitPct+'%';
 
-  // Month PMO clean & relapses
   var pmoLogs=store.pmo.dailyLog||{};
   var cleanCount=0;
   var relapseCount=0;
@@ -904,10 +880,9 @@ function renderMonthlyReview(){
   document.getElementById('mCleanDays').textContent=cleanCount;
   document.getElementById('mRelapses').textContent=relapseCount;
 
-  // Weakest Habits Breakdown
   var bd=document.getElementById('mHabitBreakdown');
   if(monthDays.length===0){
-    bd.innerHTML='<div class="muted" style="text-align:center;padding:12px 0;">Save at least 1 day in '+selectedMonth+' to view rankings.</div>';
+    bd.innerHTML='<div class="muted" style="text-align:center;padding:12px 0;">No logs yet. Finish daily trials to track rankings.</div>';
   }else{
     var sorted=HABITS.map(h=>{
       var count=habitCounts[h.id]||0;
@@ -968,6 +943,7 @@ function renderPmo(){
   var p=store.pmo||{days:0,best:0,resets:0};
   document.getElementById('pmoDays').textContent=p.days||0;
   document.getElementById('pmoDisplay').textContent=p.days||0;
+  document.getElementById('pmoDisplay').style.color=(p.days>0?'var(--g)':'var(--m)');
   document.getElementById('pmoBest').textContent=(p.best||0)+' days';
   document.getElementById('pmoResets').textContent=p.resets||0;
   document.getElementById('hunterPmoTitle').textContent=getHunterTitle(p.days||0);
