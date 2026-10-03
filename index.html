@@ -466,7 +466,6 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
-// INITIALIZE FRESH SYSTEM DATA (8000 EXP, Rank C Base, Clean Slate)
 var store=load();
 if(!store){
   store={
@@ -492,9 +491,31 @@ if(!store.today)store.today={date:todayKey(),checked:{},todos:[],note:'',dailyQu
 if(!store.today.checked)store.today.checked={};
 if(!store.today.todos)store.today.todos=[];
 
+// AUTOMATIC ARCHIVE ENGINE (Saves pending habits to History on rollover)
 function checkDateRollover(){
   var curDate=todayKey();
   if(store.today.date!==curDate){
+    var prev=store.today;
+    var checkedKeys=Object.keys(prev.checked||{}).filter(k=>!!prev.checked[k]);
+    
+    // If not manually sealed, auto-archive previous day's checked items
+    if(!prev.isSaved && (checkedKeys.length>0 || (prev.note&&prev.note.trim().length>0))){
+      var missedCount=HABITS.length-checkedKeys.length;
+      if(missedCount===0 && !prev.perfectAwarded){
+        prev.perfectAwarded=true;
+        store.totalExp=(store.totalExp||0)+200;
+      } else if(missedCount>0 && !prev.penaltyLogged){
+        store.penalties=(store.penalties||0)+1;
+        var pool=missedCount===1?P1:missedCount<=3?P2:missedCount<=5?P3:P4;
+        store.punishment={active:true,task:rnd(pool),missed:missedCount,date:prev.date};
+      }
+      prev.isSaved=true;
+      prev.autoArchived=true;
+      var existingIdx=store.history.findIndex(h=>h.date===prev.date);
+      if(existingIdx>=0) store.history[existingIdx]=JSON.parse(JSON.stringify(prev));
+      else store.history.unshift(JSON.parse(JSON.stringify(prev)));
+    }
+
     store.today={date:curDate,checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false};
     save(store);
   }
@@ -805,7 +826,7 @@ function renderRanksPage(){
     var unlocked=store.totalExp>=r.min;
     return '<div class="rank-row" style="background:'+(isCur?r.bg:'#111118')+';border-color:'+(isCur?r.color+'50':'var(--b)')+';opacity:'+(unlocked?1:0.4)+';"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:12px;"><div style="font-size:30px;font-weight:900;color:'+r.color+';text-shadow:'+(isCur?'0 0 20px '+r.color:'none')+';width:45px;">'+r.rank+'</div><div><div style="font-size:13px;font-weight:700;color:'+(isCur?r.color:'var(--w)')+';">'+r.name+'</div><div style="font-family:monospace;font-size:9px;color:var(--m);margin-top:2px;">'+num(r.min)+' - '+num(r.max)+' EXP</div></div></div>'+(isCur?'<div style="font-family:monospace;font-size:9px;color:'+r.color+';background:'+r.color+'15;border:1px solid '+r.color+'30;border-radius:4px;padding:3px 8px;">ACTIVE</div>':(unlocked?'<div style="color:#39ff14;font-size:12px;">✓</div>':''))+'</div>'+(isCur?'<div style="margin-top:10px;"><div class="bar-bg"><div class="bar-fill" style="width:'+pct+'%;background:'+r.color+';"></div></div><div style="font-family:monospace;font-size:9px;color:var(--m);margin-top:4px;text-align:right;">'+num(inRank)+' / '+num(needed)+' EXP</div></div>':'')+'</div>';
   }).join('');
-  document.getElementById('expGuide').innerHTML=EXP_GUIDE.map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">'+e[0]+'</span><span style="font-family:monospace;font-size:10px;color:'+e[1]+';font-weight:700;">'+e[2]+'</span></div>').join('');
+  document.getElementById('expGuide').innerHTML=EXP_GUIDE.map(e=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a22;"><span style="font-family:monospace;font-size:10px;color:var(--m);">' + e[0] + '</span><span style="font-family:monospace;font-size:10px;color:' + e[1] + ';font-weight:700;">' + e[2] + '</span></div>').join('');
 }
 
 /* BATTLE LOG */
@@ -841,8 +862,13 @@ function renderHistoryLedger(){
 function initMonthOptions(){
   var sel=document.getElementById('monthSelect');
   if(!sel) return;
+  var monthsSet=new Set();
   var curM=todayKey().substring(0,7);
-  sel.innerHTML='<option value="'+curM+'">'+curM+'</option>';
+  monthsSet.add(curM);
+  (store.history||[]).forEach(h=>{if(h.date)monthsSet.add(h.date.substring(0,7));});
+  Object.keys(store.pmo.dailyLog||{}).forEach(d=>{monthsSet.add(d.substring(0,7));});
+  var arr=Array.from(monthsSet).sort().reverse();
+  sel.innerHTML=arr.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
 }
 
 function renderMonthlyReview(){
