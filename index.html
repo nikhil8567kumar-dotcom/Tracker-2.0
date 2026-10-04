@@ -414,7 +414,8 @@ const EXP_GUIDE=[
   ["PMO relapse 5d+","#ff3c3c","-200"]
 ];
 
-const KEY='nikrises_clean_v4_fresh';
+// FRESH DATABASE KEY - CLEARS OLD STATE IMMEDIATELY
+const KEY='nikrises_clean_v5_pure_reset';
 
 function load(){
   try{
@@ -446,6 +447,7 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
+// INITIALIZE FRESH INSTANCE (8000 EXP, Rank C Base, Zero PMO, Zero History)
 var store=load();
 if(!store){
   store={
@@ -477,12 +479,14 @@ function checkDateRollover(){
     var prev=store.today;
     var checkedKeys=Object.keys(prev.checked||{}).filter(k=>!!prev.checked[k]);
 
+    // Check if an uncompleted penalty carries over past midnight
     if(store.punishment && store.punishment.active){
       store.totalExp=Math.max(0,(store.totalExp||0)-1000);
       store.punishment.active=false;
       showPop(-1000,'UNFULFILLED PENALTY! -1000 EXP','#ff3c3c');
     }
 
+    // Auto-archive habits to service log on midnight rollover
     if(!prev.isSaved && (checkedKeys.length>0 || (prev.note&&prev.note.trim().length>0))){
       var missedCount=HABITS.length-checkedKeys.length;
       if(missedCount===0 && !prev.perfectAwarded){
@@ -697,7 +701,7 @@ function finalizeTrialAndSave(){
     }
     if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]&&!store.today.trialAwarded){
       store.today.trialAwarded=true;
-      applyExp(250,'Trial Mastered! +250 EXP ⚔️');
+      applyExp(250,'Trial Mastered! +250 EXP ⚔️️');
     }
   }else{
     store.penalties=(store.penalties||0)+1;
