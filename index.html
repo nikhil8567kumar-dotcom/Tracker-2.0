@@ -58,14 +58,17 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 .trial-q{text-align:left;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;}
 .trial-q.selected{border-color:var(--g);background:rgba(57,255,20,0.08);}
 
+/* PMO GRID INTERACTIVE */
 .pmo-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0;}
-.pmo-cell{background:var(--c);border:1px solid var(--b);border-radius:8px;padding:8px 2px;text-align:center;}
+.pmo-cell{background:var(--c);border:1px solid var(--b);border-radius:8px;padding:8px 2px;text-align:center;cursor:pointer;transition:transform 0.1s;}
+.pmo-cell:active{transform:scale(0.95);}
 .pmo-cell.clean{border-color:rgba(57,255,20,0.35);background:rgba(57,255,20,0.08);}
 .pmo-cell.relapse{border-color:rgba(255,60,60,0.4);background:rgba(255,60,60,0.12);}
 .pmo-cell.shielded{border-color:rgba(0,217,255,0.4);background:rgba(0,217,255,0.1);}
 .pmo-cell-date{font-family:monospace;font-size:8px;color:var(--m);margin-bottom:2px;}
 .pmo-cell-icon{font-size:12px;font-weight:900;}
 
+/* DISCIPLINE BATTLE LOG */
 .battle-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:10px;}
 .battle-card.perfect{border-left:4px solid var(--g);}
 .battle-card.partial{border-left:4px solid var(--y);}
@@ -82,6 +85,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 .battle-tag.no{color:var(--m);opacity:0.6;border-left:2px solid var(--r);text-decoration:line-through;}
 .battle-note{font-size:11px;color:var(--m);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid var(--b);}
 
+/* REVIEW METRICS */
 .review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
 .review-box{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 6px;text-align:center;}
 .review-num{font-size:20px;font-weight:900;font-family:monospace;}
@@ -136,6 +140,19 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
       <button onclick="document.getElementById('pmoOverlay').classList.remove('show')" style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--b);background:var(--s);color:var(--w);cursor:pointer;font-size:13px;font-weight:700;">Cancel</button>
       <button onclick="confirmRelapse()" style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--r);color:#fff;cursor:pointer;font-size:13px;font-weight:700;">Confirm Slip</button>
     </div>
+  </div>
+</div>
+
+<!-- PAST DATE PMO CORRECTION MODAL -->
+<div class="overlay" id="editDateOverlay">
+  <div class="obox">
+    <div style="font-size:18px;color:var(--g);font-weight:900;margin-bottom:4px;">Adjust PMO Status</div>
+    <div id="editDateLabel" class="muted" style="margin-bottom:14px;"></div>
+    
+    <button class="btn btn-g" onclick="applyPastDateStatus('clean')">✓ Mark Clean (No Fap)</button>
+    <button class="btn btn-r" onclick="applyPastDateStatus('relapse')">💀 Mark Fapped / Slip</button>
+    <button class="btn" onclick="applyPastDateStatus('clear')" style="background:var(--s);border:1px solid var(--b);color:var(--m);margin-top:8px;">— Clear Record</button>
+    <button class="btn" onclick="document.getElementById('editDateOverlay').classList.remove('show')" style="background:none;border:none;color:var(--m);margin-top:6px;font-size:11px;">Close</button>
   </div>
 </div>
 
@@ -322,7 +339,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 
   <div class="surface">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span class="seclbl" style="margin:0;">Combat Calendar</span>
+      <span class="seclbl" style="margin:0;">Combat Calendar (Tap Day to Edit)</span>
       <span class="muted">Live status</span>
     </div>
     <div class="pmo-grid" id="pmoCombatGrid"></div>
@@ -330,7 +347,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
       <span><span style="color:var(--g);">✓</span> Clean</span>
       <span><span style="color:var(--r);">💀</span> Slip</span>
       <span><span style="color:var(--blue);">🛡️</span> Shield</span>
-      <span>— Fresh</span>
+      <span>— Unset</span>
     </div>
   </div>
 
@@ -414,8 +431,7 @@ const EXP_GUIDE=[
   ["PMO relapse 5d+","#ff3c3c","-200"]
 ];
 
-// FRESH DATABASE KEY - CLEARS OLD STATE IMMEDIATELY
-const KEY='nikrises_clean_v5_pure_reset';
+const KEY='nikrises_clean_v6_interactive_cal';
 
 function load(){
   try{
@@ -447,7 +463,6 @@ function fmtDate(){
 }
 function num(n){return Number(n||0).toLocaleString();}
 
-// INITIALIZE FRESH INSTANCE (8000 EXP, Rank C Base, Zero PMO, Zero History)
 var store=load();
 if(!store){
   store={
@@ -479,14 +494,12 @@ function checkDateRollover(){
     var prev=store.today;
     var checkedKeys=Object.keys(prev.checked||{}).filter(k=>!!prev.checked[k]);
 
-    // Check if an uncompleted penalty carries over past midnight
     if(store.punishment && store.punishment.active){
       store.totalExp=Math.max(0,(store.totalExp||0)-1000);
       store.punishment.active=false;
       showPop(-1000,'UNFULFILLED PENALTY! -1000 EXP','#ff3c3c');
     }
 
-    // Auto-archive habits to service log on midnight rollover
     if(!prev.isSaved && (checkedKeys.length>0 || (prev.note&&prev.note.trim().length>0))){
       var missedCount=HABITS.length-checkedKeys.length;
       if(missedCount===0 && !prev.perfectAwarded){
@@ -701,7 +714,7 @@ function finalizeTrialAndSave(){
     }
     if(trialAnswers[1]&&trialAnswers[2]&&trialAnswers[3]&&!store.today.trialAwarded){
       store.today.trialAwarded=true;
-      applyExp(250,'Trial Mastered! +250 EXP ⚔️️');
+      applyExp(250,'Trial Mastered! +250 EXP ⚔️');
     }
   }else{
     store.penalties=(store.penalties||0)+1;
@@ -925,6 +938,67 @@ function getHunterTitle(days){
   return "UNINITIATED";
 }
 
+var selectedEditKey = null;
+
+function openEditDateModal(dateKey, displayDay){
+  selectedEditKey = dateKey;
+  document.getElementById('editDateLabel').textContent = 'Date: ' + dateKey;
+  document.getElementById('editDateOverlay').classList.add('show');
+}
+
+function applyPastDateStatus(status){
+  if(!selectedEditKey) return;
+  if(!store.pmo.dailyLog) store.pmo.dailyLog = {};
+  
+  if(status === 'clear'){
+    delete store.pmo.dailyLog[selectedEditKey];
+  } else {
+    store.pmo.dailyLog[selectedEditKey] = status;
+    if(status === 'relapse'){
+      if(!store.pmo.triggers) store.pmo.triggers = [];
+      store.pmo.triggers.unshift({trigger: "Adjusted Slip Date", date: selectedEditKey});
+    }
+  }
+
+  // Recalculate streak metrics based on updated calendar records
+  recalculatePmoStreak();
+
+  document.getElementById('editDateOverlay').classList.remove('show');
+  save(store);
+  renderPmo();
+  renderRankHero();
+}
+
+function recalculatePmoStreak(){
+  var log = store.pmo.dailyLog || {};
+  var curStreak = 0;
+  var maxStreak = store.pmo.best || 0;
+  var totalResets = 0;
+
+  // Count backwards from today
+  for(let i=0; i<60; i++){
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var st = log[key];
+    if(st === 'clean') {
+      curStreak++;
+    } else if(st === 'relapse') {
+      break;
+    }
+  }
+
+  Object.keys(log).forEach(k => {
+    if(log[k] === 'relapse') totalResets++;
+  });
+
+  if(curStreak > maxStreak) maxStreak = curStreak;
+
+  store.pmo.days = curStreak;
+  store.pmo.best = maxStreak;
+  store.pmo.resets = totalResets;
+}
+
 function renderPmoGrid(){
   var g=document.getElementById('pmoCombatGrid');
   if(!g) return;
@@ -941,7 +1015,7 @@ function renderPmoGrid(){
     if(status==='clean'){cls='clean';icon='✓';}
     else if(status==='relapse'){cls='relapse';icon='💀';}
     else if(status==='shielded'){cls='shielded';icon='🛡️';}
-    cells+='<div class="pmo-cell '+cls+'"><div class="pmo-cell-date">'+dayNum+'</div><div class="pmo-cell-icon">'+icon+'</div></div>';
+    cells+='<div class="pmo-cell '+cls+'" onclick="openEditDateModal(\''+key+'\', '+dayNum+')"><div class="pmo-cell-date">'+dayNum+'</div><div class="pmo-cell-icon">'+icon+'</div></div>';
   }
   g.innerHTML=cells;
 }
