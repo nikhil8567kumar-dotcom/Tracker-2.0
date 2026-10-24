@@ -91,13 +91,12 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 .review-num{font-size:20px;font-weight:900;font-family:monospace;}
 .review-lbl{font-size:8px;font-family:monospace;color:var(--m);text-transform:uppercase;margin-top:2px;}
 
-/* SYSTEM AI TERMINAL */
-.chat-window{background:var(--c);border:1px solid var(--b);border-radius:12px;height:340px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+/* SYSTEM TERMINAL */
+.chat-window{background:var(--c);border:1px solid var(--b);border-radius:12px;height:360px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
 .chat-msg{max-width:85%;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.45;}
 .chat-msg.system{align-self:flex-start;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.25);color:var(--w);}
 .chat-msg.hunter{align-self:flex-end;background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);color:var(--blue);font-weight:600;}
 .voice-bar{display:flex;align-items:center;justify-content:space-between;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
-.api-bar{background:rgba(255,214,0,0.05);border:1px dashed rgba(255,214,0,0.3);border-radius:10px;padding:10px;margin-bottom:10px;display:flex;gap:6px;align-items:center;}
 </style>
 </head>
 <body>
@@ -320,26 +319,21 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <div id="todoList"></div>
 </div>
 
-<!-- SYSTEM AI TAB -->
+<!-- OFFLINE INSTANT SYSTEM AI TAB -->
 <div class="panel" id="panel-ai">
-  <div class="surface" style="padding:12px 14px;margin-bottom:8px;">
+  <div class="surface" style="padding:12px 14px;margin-bottom:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span class="seclbl" style="margin:0;">Monarch AI Core</span>
+      <span class="seclbl" style="margin:0;">System Companion Terminal</span>
       <label style="display:flex;align-items:center;gap:6px;font-family:monospace;font-size:10px;color:var(--g);cursor:pointer;">
         <input type="checkbox" id="aiVoiceToggle" checked style="accent-color:var(--g);"> Speak Responses
       </label>
     </div>
   </div>
 
-  <div class="api-bar">
-    <input class="inp" id="geminiApiKeyInput" type="password" placeholder="Paste Gemini API Key..." style="padding:8px 10px;font-size:11px;">
-    <button class="btn btn-y" onclick="saveApiKey()" style="width:auto;margin:0;padding:8px 12px;font-size:11px;">Save</button>
-  </div>
-
   <div class="chat-window" id="aiChatWindow">
     <div class="chat-msg system">
       ⚔️ <strong>SYSTEM MONARCH ONLINE</strong><br>
-      Greetings, Hunter. I am your awakened AI discipline companion. Ask me anything—discipline tactics, urge defense, life balance, or general topics. I observe your progress and will answer with absolute candor.
+      Greetings, Hunter. Core link operational. I monitor your progress, incomplete directives, and PMO defenses. Tap any command or type your prompt below.
     </div>
   </div>
 
@@ -349,9 +343,9 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;">
-    <button class="btn btn-g" onclick="quickPrompt('I am feeling a heavy urge attacking me right now. Direct me!')" style="font-size:10px;padding:8px 6px;margin:0;">🚨 Urge Emergency</button>
-    <button class="btn btn-y" onclick="quickPrompt('Give me a raw motivation mindset boost for today.')" style="font-size:10px;padding:8px 6px;margin:0;">⚡ Mindset Boost</button>
-    <button class="btn btn-blue" onclick="quickPrompt('Analyze my pending tasks and give me a tactical strategy.')" style="font-size:10px;padding:8px 6px;margin:0;">🎯 Task Strategy</button>
+    <button class="btn btn-g" onclick="quickPrompt('Urge attack incoming!')" style="font-size:10px;padding:8px 6px;margin:0;">🚨 Urge Defense</button>
+    <button class="btn btn-y" onclick="quickPrompt('Give me motivation.')" style="font-size:10px;padding:8px 6px;margin:0;">⚡ Mindset Boost</button>
+    <button class="btn btn-blue" onclick="quickPrompt('What are my pending tasks?')" style="font-size:10px;padding:8px 6px;margin:0;">🎯 Pending Tasks</button>
     <button class="btn btn-r" onclick="stopSpeech()" style="font-size:10px;padding:8px 6px;margin:0;">🔇 Stop Voice</button>
   </div>
 </div>
@@ -538,8 +532,7 @@ if(!store){
     punishment:null,
     pmo:{days:0,best:0,resets:0,triggers:[],dailyLog:{}},
     today:{date:todayKey(),checked:{},todos:[],note:'',dailyQuestDone:false,isSaved:false},
-    history:[],
-    geminiKey:''
+    history:[]
   };
   save(store);
 }
@@ -1264,9 +1257,6 @@ function switchTab(name,btn){
   if(name==='monthly'){initMonthOptions();renderMonthlyReview();}
   if(name==='quests'){renderDailyQuest();renderTodos();}
   if(name==='pmo')renderPmo();
-  if(name==='ai'){
-    if(store.geminiKey) document.getElementById('geminiApiKeyInput').value=store.geminiKey;
-  }
 }
 
 function updateTimer(){
@@ -1298,15 +1288,8 @@ function midnightCheck(){
 }
 
 /* ========================================================
-   GEMINI AI & REAL-TIME SYSTEM ENGINE (OFFICIAL V1 STABLE)
+   OFFLINE INSTANT SYSTEM COMPANION & VOICE ENGINE
 ======================================================== */
-function saveApiKey(){
-  var val=document.getElementById('geminiApiKeyInput').value.trim();
-  store.geminiKey=val;
-  save(store);
-  alert(val ? "✓ Monarch API Key Synchronized" : "API Key Cleared");
-}
-
 function getMissingHabitsList(){
   var checkedMap=store.today.checked||{};
   var missing=HABITS.filter(h=>!checkedMap[h.id]).map(h=>h.short);
@@ -1356,107 +1339,55 @@ function appendChatMessage(sender, text){
   win.scrollTop=win.scrollHeight;
 }
 
-async function callGeminiApi(userPrompt){
-  var apiKey=store.geminiKey||'';
-  if(!apiKey){
-    return "⚠ <strong>API KEY REQUIRED:</strong> Please paste your Gemini API key in the yellow box above and tap Save.";
-  }
-
+function generateOfflineSystemReply(prompt){
+  var low=prompt.toLowerCase();
   var r=getRank(store.totalExp);
   var missing=getMissingHabitsList();
   var pmo=store.pmo&&store.pmo.days||0;
 
-  var systemPrompt = `You are the conscious, authoritative System from Solo Leveling serving as the personal discipline companion to Hunter Nikhil. 
-Your tone is commanding, authentic, concise, intelligent, and supportive—like a cosmic monarch who accepts zero excuses.
-You can discuss ANY topic the user brings up (casual chats, questions, life advice, workouts, studies, coding, urges, or philosophy), but you always view everything through the lens of discipline, high agency, and self-mastery.
-
-Current Hunter Stats:
-- Rank: ${r.name} (LVL ${Math.floor(store.totalExp/1000)})
-- Total EXP: ${store.totalExp}
-- Current PMO Clean Streak: ${pmo} Days
-- Pending Habits Today: ${missing.length > 0 ? missing.join(', ') : 'All habits completed (Flawless)'}
-- Penalties Recorded: ${store.penalties || 0}
-
-Rules for replies:
-1. Keep replies concise, punchy, and conversational (2 to 4 sentences usually, max 5 unless asked for an in-depth breakdown).
-2. Avoid excessive asterisks or markdown clutter.
-3. If the user mentions urges, immediately give a stern, direct physical command to snap them out of dopamine traps.
-4. If they just say hi or ask everyday questions, answer intelligently with your Monarch presence without repeating the whole stat block.`;
-
-  var payload = {
-    contents: [
-      {
-        parts: [{ text: systemPrompt + "\n\nHunter's Message: " + userPrompt }]
-      }
-    ],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 250
+  if(low.includes('urge') || low.includes('fap') || low.includes('lust') || low.includes('relapse') || low.includes('emergency')){
+    return "🚨 <strong>URGE OVERRIDE DIRECTIVE:</strong><br>Drop your phone immediately. Execute 35 pushups right now or submerge your face in freezing cold water. A momentary lapse will cost you -1,100 EXP and reset your "+pmo+"-day clean streak. Stand up and conquer it!";
+  }
+  if(low.includes('boost') || low.includes('motivation') || low.includes('tired') || low.includes('lazy') || low.includes('give me')){
+    return "⚡ <strong>HUNTER AWAKENING:</strong><br>Weakness is an option; discipline is non-negotiable. You hold "+num(store.totalExp)+" EXP as a <strong>"+r.name+"</strong>. Every rep and completed habit brings you closer to monarch status. Rise up!";
+  }
+  if(low.includes('task') || low.includes('left') || low.includes('pending') || low.includes('what') || low.includes('focus')){
+    if(missing.length===0){
+      return "🎯 <strong>STATUS: FLAWLESS</strong><br>All 7 core habits are locked in today. Conquer your tactical objectives or prepare for tonight's Hunter Trial.";
     }
-  };
-
-  var endpoints = [
-    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
-  ];
-
-  for (var i = 0; i < endpoints.length; i++) {
-    try {
-      var res = await fetch(endpoints[i], {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      var data = await res.json();
-      
-      if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
-        return data.candidates[0].content.parts[0].text;
-      }
-      if (data && data.error && i === endpoints.length - 1) {
-        return "⚠ <strong>System Error:</strong> " + data.error.message;
-      }
-    } catch (e) {
-      if (i === endpoints.length - 1) {
-        return "⚠ <strong>System Link Severed:</strong> Check your internet connection.";
-      }
-    }
+    return "🎯 <strong>TACTICAL DIRECTIVES REMAINING:</strong><br>You still owe the system: <strong>"+missing.join(', ')+"</strong>. Complete them before midnight to avoid active penalties.";
+  }
+  if(low.includes('hi') || low.includes('hello') || low.includes('hey') || low.includes('system')){
+    return "⚔️ <strong>SYSTEM READY:</strong><br>Greetings, Hunter Nikhil. System metrics are fully synced. Current level: "+Math.floor(store.totalExp/1000)+", Clean streak: "+pmo+" days. What is your directive?";
   }
 
-  return "⚠ <strong>System Overload:</strong> Google AI servers are temporarily saturated. Please try again in a few seconds.";
+  var responses=[
+    "Discipline is what you execute when enthusiasm fades. Focus on your pending objectives.",
+    "The System acknowledges action, not hesitation. Conquer your next task without delay.",
+    "Every executed habit cements your path toward S-Rank. Keep your focus sharp.",
+    "Do not allow comfort to steal your progress. Execute your daily directives now."
+  ];
+  return "⚔️ <strong>MONARCH DIRECTIVE:</strong><br>" + responses[Math.floor(Math.random()*responses.length)];
 }
 
-async function sendAiMessage(){
+function sendAiMessage(){
   var inp=document.getElementById('aiChatInput');
-  var btn=document.getElementById('sendAiBtn');
   var text=inp.value.trim();
   if(!text) return;
   
   appendChatMessage('hunter', text);
   inp.value='';
-  btn.disabled=true;
-  btn.style.opacity='0.4';
 
-  var loadingDiv=document.createElement('div');
-  loadingDiv.className='chat-msg system';
-  loadingDiv.id='aiLoadingMsg';
-  loadingDiv.innerHTML='<span style="font-family:monospace;color:var(--y);">Connecting to System Core...</span>';
-  document.getElementById('aiChatWindow').appendChild(loadingDiv);
+  setTimeout(function(){
+    var replyHtml = generateOfflineSystemReply(text);
+    appendChatMessage('system', replyHtml);
 
-  var replyText = await callGeminiApi(text);
-
-  var l=document.getElementById('aiLoadingMsg');
-  if(l) l.remove();
-
-  appendChatMessage('system', replyText);
-  btn.disabled=false;
-  btn.style.opacity='1';
-
-  var voiceChecked=document.getElementById('aiVoiceToggle')&&document.getElementById('aiVoiceToggle').checked;
-  if(voiceChecked){
-    var plainText=replyText.replace(/<[^>]*>/g, '').replace(/[*#]/g, '');
-    speakVoice(plainText);
-  }
+    var voiceChecked=document.getElementById('aiVoiceToggle')&&document.getElementById('aiVoiceToggle').checked;
+    if(voiceChecked){
+      var plainText=replyHtml.replace(/<[^>]*>/g, '').replace(/[*#]/g, '');
+      speakVoice(plainText);
+    }
+  }, 150);
 }
 
 function quickPrompt(promptText){
