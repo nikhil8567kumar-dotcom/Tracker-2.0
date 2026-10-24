@@ -1298,7 +1298,7 @@ function midnightCheck(){
 }
 
 /* ========================================================
-   GEMINI AI & REAL-TIME SYSTEM ENGINE (RESILIENT ROUTING)
+   GEMINI AI & REAL-TIME SYSTEM ENGINE (OFFICIAL V1 STABLE)
 ======================================================== */
 function saveApiKey(){
   var val=document.getElementById('geminiApiKeyInput').value.trim();
@@ -1356,17 +1356,6 @@ function appendChatMessage(sender, text){
   win.scrollTop=win.scrollHeight;
 }
 
-// TRIED-AND-TESTED MULTI-ENDPOINT ROUTING (HANDLES 503 OVERLOAD AUTOMATICALLY)
-async function requestGeminiModel(modelName, apiKey, payload){
-  var url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-  var res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  return res.json();
-}
-
 async function callGeminiApi(userPrompt){
   var apiKey=store.geminiKey||'';
   if(!apiKey){
@@ -1397,7 +1386,6 @@ Rules for replies:
   var payload = {
     contents: [
       {
-        role: "user",
         parts: [{ text: systemPrompt + "\n\nHunter's Message: " + userPrompt }]
       }
     ],
@@ -1407,30 +1395,35 @@ Rules for replies:
     }
   };
 
-  // Primary: gemini-1.5-flash-latest, Secondary: gemini-1.5-flash, Tertiary: gemini-1.5-pro
-  var candidateModels = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-1.5-pro-latest'];
+  var endpoints = [
+    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+  ];
 
-  for (var i = 0; i < candidateModels.length; i++) {
+  for (var i = 0; i < endpoints.length; i++) {
     try {
-      var data = await requestGeminiModel(candidateModels[i], apiKey, payload);
+      var res = await fetch(endpoints[i], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      var data = await res.json();
+      
       if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
         return data.candidates[0].content.parts[0].text;
       }
-      // If error is high demand / 503, fallback to next model
-      if (data && data.error && (data.error.code === 503 || data.error.message.includes('high demand'))) {
-        continue;
-      }
-      if (data && data.error) {
+      if (data && data.error && i === endpoints.length - 1) {
         return "⚠ <strong>System Error:</strong> " + data.error.message;
       }
     } catch (e) {
-      if (i === candidateModels.length - 1) {
+      if (i === endpoints.length - 1) {
         return "⚠ <strong>System Link Severed:</strong> Check your internet connection.";
       }
     }
   }
 
-  return "⚠ <strong>System Overload:</strong> Google AI servers are temporarily saturated. Please try again in 30 seconds.";
+  return "⚠ <strong>System Overload:</strong> Google AI servers are temporarily saturated. Please try again in a few seconds.";
 }
 
 async function sendAiMessage(){
