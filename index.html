@@ -11,7 +11,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 .green{color:var(--g);}.red{color:var(--r);}.yellow{color:var(--y);}.blue{color:var(--blue);}
 .muted{color:var(--m);font-family:monospace;font-size:10px;letter-spacing:1px;}
 .surface{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:12px;}
-.seclbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin:14px 0 8px 2px;}
+.seclbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin-14px 0 8px 2px;}
 .tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex-shrink:0;padding:8px 13px;background:var(--s);border:1px solid var(--b);border-radius:8px;color:var(--m);font-family:monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
@@ -1299,13 +1299,13 @@ function midnightCheck(){
 }
 
 /* ========================================================
-   GEMINI AI & REAL-TIME SYSTEM ENGINE (LOCAL STORAGE SECURED)
+   GEMINI AI & REAL-TIME SYSTEM ENGINE (UPDATED TO GEMINI-3.8-FLASH)
 ======================================================== */
 function saveApiKey(){
   var val=document.getElementById('geminiApiKeyInput').value.trim();
   store.geminiKey=val;
   save(store);
-  alert(val ? "✓ Monarch API Key Synchronized to Device" : "API Key Cleared");
+  alert(val ? "✓ Monarch API Key Synchronized" : "API Key Cleared");
 }
 
 function getMissingHabitsList(){
@@ -1360,7 +1360,7 @@ function appendChatMessage(sender, text){
 async function callGeminiApi(userPrompt){
   var apiKey=store.geminiKey||'';
   if(!apiKey){
-    return "⚠ <strong>API KEY REQUIRED:</strong> Please paste your Gemini API key in the yellow box above and tap Save. It will be stored privately on your phone.";
+    return "⚠ <strong>API KEY REQUIRED:</strong> Please paste your Gemini API key in the yellow box above and tap Save.";
   }
 
   var r=getRank(store.totalExp);
@@ -1385,7 +1385,7 @@ Rules for replies:
 4. If they just say hi or ask everyday questions, answer intelligently with your Monarch presence without repeating the whole stat block.`;
 
   try {
-    var response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    var response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
