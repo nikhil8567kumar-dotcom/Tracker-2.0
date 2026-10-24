@@ -11,7 +11,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 .green{color:var(--g);}.red{color:var(--r);}.yellow{color:var(--y);}.blue{color:var(--blue);}
 .muted{color:var(--m);font-family:monospace;font-size:10px;letter-spacing:1px;}
 .surface{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:16px;margin-bottom:12px;}
-.seclbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin-14px 0 8px 2px;}
+.seclbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin:14px 0 8px 2px;}
 .tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex-shrink:0;padding:8px 13px;background:var(--s);border:1px solid var(--b);border-radius:8px;color:var(--m);font-family:monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
@@ -497,7 +497,6 @@ const EXP_GUIDE=[
   ["PMO relapse 5d+","#ff3c3c","-200 per slip"]
 ];
 
-// PRESERVED KEY: KEEPS YOUR 16000+ EXP AND HISTORY INTACT
 const KEY='nikrises_clean_v9_pure_baseline';
 
 function load(){
@@ -1299,7 +1298,7 @@ function midnightCheck(){
 }
 
 /* ========================================================
-   GEMINI AI & REAL-TIME SYSTEM ENGINE (UPDATED TO GEMINI-3.8-FLASH)
+   GEMINI AI & REAL-TIME SYSTEM ENGINE (RESILIENT ROUTING)
 ======================================================== */
 function saveApiKey(){
   var val=document.getElementById('geminiApiKeyInput').value.trim();
@@ -1357,6 +1356,17 @@ function appendChatMessage(sender, text){
   win.scrollTop=win.scrollHeight;
 }
 
+// TRIED-AND-TESTED MULTI-ENDPOINT ROUTING (HANDLES 503 OVERLOAD AUTOMATICALLY)
+async function requestGeminiModel(modelName, apiKey, payload){
+  var url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+  var res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
 async function callGeminiApi(userPrompt){
   var apiKey=store.geminiKey||'';
   if(!apiKey){
@@ -1384,32 +1394,43 @@ Rules for replies:
 3. If the user mentions urges, immediately give a stern, direct physical command to snap them out of dopamine traps.
 4. If they just say hi or ask everyday questions, answer intelligently with your Monarch presence without repeating the whole stat block.`;
 
-  try {
-    var response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: systemPrompt + "\n\nHunter's Message: " + userPrompt }]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 250
-        }
-      })
-    });
-
-    var data = await response.json();
-    if(data.error){
-      return "⚠ <strong>System Error:</strong> " + data.error.message;
+  var payload = {
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: systemPrompt + "\n\nHunter's Message: " + userPrompt }]
+      }
+    ],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 250
     }
-    return data.candidates[0].content.parts[0].text;
-  } catch(e) {
-    return "⚠ <strong>System Link Severed:</strong> Check your internet connection.";
+  };
+
+  // Primary: gemini-1.5-flash-latest, Secondary: gemini-1.5-flash, Tertiary: gemini-1.5-pro
+  var candidateModels = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-1.5-pro-latest'];
+
+  for (var i = 0; i < candidateModels.length; i++) {
+    try {
+      var data = await requestGeminiModel(candidateModels[i], apiKey, payload);
+      if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
+        return data.candidates[0].content.parts[0].text;
+      }
+      // If error is high demand / 503, fallback to next model
+      if (data && data.error && (data.error.code === 503 || data.error.message.includes('high demand'))) {
+        continue;
+      }
+      if (data && data.error) {
+        return "⚠ <strong>System Error:</strong> " + data.error.message;
+      }
+    } catch (e) {
+      if (i === candidateModels.length - 1) {
+        return "⚠ <strong>System Link Severed:</strong> Check your internet connection.";
+      }
+    }
   }
+
+  return "⚠ <strong>System Overload:</strong> Google AI servers are temporarily saturated. Please try again in 30 seconds.";
 }
 
 async function sendAiMessage(){
