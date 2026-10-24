@@ -90,6 +90,13 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
 .review-box{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px 6px;text-align:center;}
 .review-num{font-size:20px;font-weight:900;font-family:monospace;}
 .review-lbl{font-size:8px;font-family:monospace;color:var(--m);text-transform:uppercase;margin-top:2px;}
+
+/* SYSTEM AI TERMINAL */
+.chat-window{background:var(--c);border:1px solid var(--b);border-radius:12px;height:320px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+.chat-msg{max-width:85%;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.45;}
+.chat-msg.system{align-self:flex-start;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.25);color:var(--w);}
+.chat-msg.hunter{align-self:flex-end;background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);color:var(--blue);font-weight:600;}
+.voice-bar{display:flex;align-items:center;justify-content:space-between;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
 </style>
 </head>
 <body>
@@ -207,6 +214,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   </div>
 </div>
 
+<!-- HEADER -->
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
   <div>
     <div style="font-size:36px;font-weight:900;letter-spacing:2px;line-height:1;">NIK<span class="green">RISES</span></div>
@@ -219,6 +227,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   </div>
 </div>
 
+<!-- RANK HERO -->
 <div class="rank-hero" id="rankHero">
   <div id="rankGlow" style="position:absolute;inset:0;pointer-events:none;"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -244,11 +253,22 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   </div>
 </div>
 
+<!-- SYSTEM AUDIO BRIEFING TRIGGER -->
+<div class="voice-bar">
+  <div>
+    <div style="font-family:monospace;font-size:11px;font-weight:800;color:var(--g);">SYSTEM AUDIO ENGINE</div>
+    <div class="muted">Voice Briefing & Directive Audio</div>
+  </div>
+  <button class="btn btn-g" onclick="speakStatusBriefing()" style="width:auto;margin:0;padding:8px 14px;font-size:11px;">🎙️ Briefing</button>
+</div>
+
+<!-- DATE BAR -->
 <div style="background:var(--s);border:1px solid var(--b);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;margin-bottom:12px;">
   <span id="dateDisp" style="font-family:monospace;font-size:11px;color:var(--g);letter-spacing:1px;"></span>
   <span id="timerDisp" class="muted">00:00:00</span>
 </div>
 
+<!-- PROGRESS -->
 <div style="margin-bottom:14px;">
   <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
     <span style="font-size:9px;font-weight:700;color:var(--m);letter-spacing:2px;text-transform:uppercase;">Today's Execution</span>
@@ -257,6 +277,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <div class="bar-bg"><div id="progressBar" class="bar-fill" style="width:0%;background:var(--g);box-shadow:0 0 8px var(--gg);"></div></div>
 </div>
 
+<!-- PUNISHMENT BANNER -->
 <div class="punish" id="punishBanner">
   <div style="font-size:14px;color:var(--r);font-weight:900;">⚠ ACTIVE PENALTY PROTOCOL</div>
   <div id="punishMeta" style="font-family:monospace;font-size:9px;color:var(--r);margin-top:3px;"></div>
@@ -265,15 +286,18 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <button class="btn btn-g" onclick="document.getElementById('punishConfirmOverlay').classList.add('show')">✓ Complete Punishment (+300 EXP)</button>
 </div>
 
+<!-- TABS -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('today',this)">Today</button>
   <button class="tab" onclick="switchTab('quests',this)">Quests</button>
+  <button class="tab" onclick="switchTab('ai',this)">System AI</button>
   <button class="tab" onclick="switchTab('history',this)">Battle Log</button>
   <button class="tab" onclick="switchTab('monthly',this)">Review</button>
   <button class="tab" onclick="switchTab('pmo',this)">PMO</button>
   <button class="tab" onclick="switchTab('ranks',this)">Ranks</button>
 </div>
 
+<!-- TODAY -->
 <div class="panel active" id="panel-today">
   <div id="habitsList"></div>
   <div class="seclbl">Daily Log / Mindset</div>
@@ -281,6 +305,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <button class="btn btn-save" style="margin-top:10px;" id="saveDayBtn" onclick="openHunterTrial()">⚔️ Take Hunter Trial & Save Day</button>
 </div>
 
+<!-- QUESTS -->
 <div class="panel" id="panel-quests">
   <div id="dailyQuestBox"></div>
   <div class="seclbl">Hunter Quests (+50 EXP)</div>
@@ -295,6 +320,38 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <div id="todoList"></div>
 </div>
 
+<!-- SYSTEM AI TAB -->
+<div class="panel" id="panel-ai">
+  <div class="surface" style="padding:12px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="seclbl" style="margin:0;">Monarch AI Terminal</span>
+      <label style="display:flex;align-items:center;gap:6px;font-family:monospace;font-size:10px;color:var(--g);cursor:pointer;">
+        <input type="checkbox" id="aiVoiceToggle" checked style="accent-color:var(--g);"> Voice Response
+      </label>
+    </div>
+  </div>
+
+  <div class="chat-window" id="aiChatWindow">
+    <div class="chat-msg system">
+      ⚔️ <strong>SYSTEM INITIATED</strong><br>
+      Hunter, I am your System Companion. Ask for tactical guidance, workout directives, mindset resets, or urge counters. Speak with me.
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;">
+    <input class="inp" id="aiChatInput" placeholder="Command the System AI..." maxlength="120" onkeydown="if(event.key==='Enter')sendAiMessage()">
+    <button class="add-btn" onclick="sendAiMessage()">➤</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;">
+    <button class="btn btn-g" onclick="quickPrompt('Urge attacking right now. Give me immediate command!')" style="font-size:10px;padding:8px 6px;margin:0;">🚨 Urge Attack</button>
+    <button class="btn btn-y" onclick="quickPrompt('Give me a high dopamine discipline mindset boost.')" style="font-size:10px;padding:8px 6px;margin:0;">⚡ Mindset Boost</button>
+    <button class="btn btn-blue" onclick="quickPrompt('What should I focus on right now?')" style="font-size:10px;padding:8px 6px;margin:0;">🎯 Focus Mission</button>
+    <button class="btn btn-r" onclick="stopSpeech()" style="font-size:10px;padding:8px 6px;margin:0;">🔇 Stop Voice</button>
+  </div>
+</div>
+
+<!-- BATTLE LOG -->
 <div class="panel" id="panel-history">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
     <span class="seclbl" style="margin:0;">Discipline Service Log</span>
@@ -303,6 +360,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <div id="historyLedger"></div>
 </div>
 
+<!-- MONTHLY REVIEW -->
 <div class="panel" id="panel-monthly">
   <div class="surface" style="padding:12px 14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -324,6 +382,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   </div>
 </div>
 
+<!-- PMO ENGINE -->
 <div class="panel" id="panel-pmo">
   <div class="surface" style="text-align:center;">
     <div id="pmoDisplay" style="font-size:56px;font-weight:900;color:var(--m);line-height:1;">0</div>
@@ -358,6 +417,7 @@ body{background:var(--bg);color:var(--w);font-family:system-ui,-apple-system,san
   <div id="pmoMilestoneList"></div>
 </div>
 
+<!-- RANKS & GUIDE -->
 <div class="panel" id="panel-ranks">
   <div class="seclbl">Hunter Ranks</div>
   <div id="ranksList"></div>
@@ -432,7 +492,7 @@ const EXP_GUIDE=[
   ["PMO relapse 5d+","#ff3c3c","-200 per slip"]
 ];
 
-// FRESH DATABASE KEY
+// PRESERVED KEY: KEEPS YOUR 16000+ EXP AND HISTORY INTACT
 const KEY='nikrises_clean_v9_pure_baseline';
 
 function load(){
@@ -1227,6 +1287,114 @@ function midnightCheck(){
       btn.style.cursor='pointer';
     }
   }
+}
+
+/* ========================================================
+   SYSTEM AI ENGINE & VOICE SYNTHESIZER
+======================================================== */
+function getMissingHabitsList(){
+  var checkedMap=store.today.checked||{};
+  var missing=HABITS.filter(h=>!checkedMap[h.id]).map(h=>h.short);
+  return missing;
+}
+
+function speakVoice(text){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  u.rate=1.0;
+  u.pitch=0.9;
+  var voices=window.speechSynthesis.getVoices();
+  if(voices.length>0){
+    var eng=voices.find(v=>v.lang.includes('en')&&v.name.includes('Male'))||voices.find(v=>v.lang.includes('en'))||voices[0];
+    if(eng) u.voice=eng;
+  }
+  window.speechSynthesis.speak(u);
+}
+
+function stopSpeech(){
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function speakStatusBriefing(){
+  var r=getRank(store.totalExp);
+  var missing=getMissingHabitsList();
+  var pmo=store.pmo&&store.pmo.days||0;
+  
+  var speech="Hunter system online. Current rank: "+r.name+", level "+Math.floor(store.totalExp/1000)+". ";
+  speech+="Your clean streak is currently "+pmo+" days. ";
+  
+  if(missing.length===0){
+    speech+="All daily habits are complete. You stand flawless today. Maintain focus.";
+  } else {
+    speech+="Attention Hunter. You have "+missing.length+" incomplete habits today: "+missing.join(', ')+". Eliminate all distractions and execute.";
+  }
+  speakVoice(speech);
+}
+
+function appendChatMessage(sender, text){
+  var win=document.getElementById('aiChatWindow');
+  var div=document.createElement('div');
+  div.className='chat-msg '+(sender==='hunter'?'hunter':'system');
+  div.innerHTML=text;
+  win.appendChild(div);
+  win.scrollTop=win.scrollHeight;
+}
+
+function generateSystemAiReply(prompt){
+  var low=prompt.toLowerCase();
+  var r=getRank(store.totalExp);
+  var missing=getMissingHabitsList();
+  var pmo=store.pmo&&store.pmo.days||0;
+
+  if(low.includes('urge') || low.includes('fap') || low.includes('lust') || low.includes('relapse')){
+    return "🚨 <strong>URGE NEUTRALIZATION OVERRIDE:</strong><br>Dopamine receptors are firing false signals. Put this screen down immediately. Drop for 35 pushups or splash freezing water on your face. A momentary relapse costs -1,100 EXP and strips your hunter pride. Fight it!";
+  }
+  if(low.includes('boost') || low.includes('motivation') || low.includes('tired') || low.includes('lazy')){
+    return "⚡ <strong>HUNTER AWAKENING:</strong><br>Pain is temporary; weakness is a choice. You are currently ranked as <strong>"+r.name+"</strong>. Weak hunters look for shortcuts. True monarchs rise through the grind. Get moving!";
+  }
+  if(low.includes('task') || low.includes('left') || low.includes('pending') || low.includes('focus')){
+    if(missing.length===0){
+      return "🎯 <strong>DIRECTIVE FULFILLED:</strong><br>All core habits are executed for today! Take on custom tactical quests or conquer the Awakened Trial.";
+    }
+    return "🎯 <strong>TACTICAL DIRECTIVES REMAINING:</strong><br>You still owe the system: <strong>"+missing.join(', ')+"</strong>. Do not allow midnight penalties to claim your EXP.";
+  }
+  if(low.includes('streak') || low.includes('pmo')){
+    return "🛡️ <strong>COMBAT RECORD:</strong><br>Current Clean Streak: <strong>"+pmo+" Days</strong>. Every 7 days awards a Hunter Shield. Guard the streak with your life.";
+  }
+
+  var responses=[
+    "Discipline is what you do when motivation dies. Fulfill your daily habits and arise.",
+    "The System recognizes actions, not excuses. Attack your pending tasks right now.",
+    "Your current EXP is "+num(store.totalExp)+". Every completed task brings you closer to monarch rank. Stand up and conquer.",
+    "A monarch never hesitates. Review your tactical quests and strike without delay."
+  ];
+  return "⚔️ <strong>SYSTEM DIRECTIVE:</strong><br>" + responses[Math.floor(Math.random()*responses.length)];
+}
+
+function sendAiMessage(){
+  var inp=document.getElementById('aiChatInput');
+  var text=inp.value.trim();
+  if(!text) return;
+  
+  appendChatMessage('hunter', text);
+  inp.value='';
+
+  setTimeout(function(){
+    var replyHtml=generateSystemAiReply(text);
+    appendChatMessage('system', replyHtml);
+
+    var voiceChecked=document.getElementById('aiVoiceToggle')&&document.getElementById('aiVoiceToggle').checked;
+    if(voiceChecked){
+      var plainText=replyHtml.replace(/<[^>]*>/g, '').replace(/[🚨⚡🎯🛡️⚔️]/g, '');
+      speakVoice(plainText);
+    }
+  }, 400);
+}
+
+function quickPrompt(promptText){
+  document.getElementById('aiChatInput').value=promptText;
+  sendAiMessage();
 }
 
 // INITIALIZE
