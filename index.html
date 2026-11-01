@@ -308,56 +308,74 @@ function openDayModal(d) {
 
 function applyCalStatus(type) {
   if (!selectedDay) return;
+
   const prev = state.calendar[selectedDay];
 
-  if (type === 'clear') {
-    if (prev) {
-      if (prev.status === 'clean') {
-        // Deduct clean reward
-        state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
-        state.streak = Math.max(0, state.streak - 1);
-      } else if (prev.status === 'slip') {
-        // Refund EXACTLY what was actually deducted
-        const actualDeducted = Math.abs(prev.expDelta || 0);
-        state.exp += actualDeducted;
-        state.streak = prev.prevStreak || 0;
-      }
-      delete state.calendar[selectedDay];
-      state.history = state.history.filter(h => h.day !== selectedDay);
-    }
-  } else if (type === 'clean') {
-    if (!prev || prev.status !== 'clean') {
-      if (prev && prev.status === 'slip') {
-        // Refund only the actual deduction if it was a slip
-        state.exp += Math.abs(prev.expDelta || 0);
-        state.streak = prev.prevStreak || 0;
-      }
-      const reward = getDailyCleanExp(state.streak);
-      state.streak += 1;
-      state.exp += reward;
-      state.calendar[selectedDay] = { status:'clean', expDelta: reward, prevStreak: state.streak - 1 };
-      state.history.unshift({ day:selectedDay, status:'Clean', exp:reward, date:new Date().toLocaleDateString() });
-    }
-  } else if (type === 'slip') {
-    if (prev && prev.status === 'clean') {
+  // Re-clicking the same status is a no-op: never apply the same reward/penalty twice.
+  if (prev && prev.status === type && type !== 'clear') {
+    closeModal('calModal');
+    return;
+  }
+
+  // Reverse the previous calendar action before replacing or clearing it.
+  // The stored delta is the exact EXP amount that was actually awarded/deducted.
+  if (prev) {
+    if (prev.status === 'clean') {
       state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
       state.streak = Math.max(0, state.streak - 1);
+    } else if (prev.status === 'slip') {
+      state.exp += Math.abs(prev.expDelta || 0);
+      state.streak = Number.isFinite(prev.prevStreak) ? prev.prevStreak : 0;
     }
-    const maxPenalty = (state.streak < 5) ? 1100 : 200;
-    // Track exact penalty deducted (cannot deduct more than current exp)
+    delete state.calendar[selectedDay];
+    state.history = state.history.filter(h => h.day !== selectedDay);
+  }
+
+  if (type === 'clean') {
+    const previousStreak = state.streak;
+    const reward = getDailyCleanExp(previousStreak);
+    state.streak = previousStreak + 1;
+    state.exp += reward;
+    state.calendar[selectedDay] = {
+      status: 'clean',
+      expDelta: reward,
+      prevStreak: previousStreak
+    };
+    state.history.unshift({
+      day: selectedDay,
+      status: 'Clean',
+      exp: reward,
+      date: new Date().toLocaleDateString()
+    });
+  } else if (type === 'slip') {
+    const previousStreak = state.streak;
+    const maxPenalty = (previousStreak < 5) ? 1100 : 200;
     const actualLoss = Math.min(state.exp, maxPenalty);
-    const oldStreak = state.streak;
-    state.exp = state.exp - actualLoss;
+    state.exp -= actualLoss;
     state.streak = 0;
-    state.calendar[selectedDay] = { status:'slip', expDelta: -actualLoss, prevStreak: oldStreak };
-    state.history.unshift({ day:selectedDay, status:'Relapse Slip', exp:-actualLoss, date:new Date().toLocaleDateString() });
+    state.calendar[selectedDay] = {
+      status: 'slip',
+      expDelta: -actualLoss,
+      prevStreak: previousStreak
+    };
+    state.history.unshift({
+      day: selectedDay,
+      status: 'Relapse Slip',
+      exp: -actualLoss,
+      date: new Date().toLocaleDateString()
+    });
+  } else if (type !== 'clear') {
+    // Unknown status: do not leave a partially changed record.
+    if (prev) state.calendar[selectedDay] = prev;
+    closeModal('calModal');
+    saveState();
+    return;
   }
 
   updateGraph();
   closeModal('calModal');
   saveState();
 }
-
 function openSlipModal() {
   const penalty = (state.streak < 5) ? 1100 : 200;
   document.getElementById('slipPenaltyExplanation').innerText = 
