@@ -79,11 +79,14 @@ canvas { width:100%; height:100%; }
 .rank-exp { font-size:11px; font-family:monospace; color:var(--text-muted); font-weight:600; }
 .badge-active { background:var(--neon-purple); color:#fff; font-size:9px; font-weight:900; padding:2px 8px; border-radius:6px; letter-spacing:0.5px; }
 
-/* Daily & Custom Quests */
-.quest-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; }
-.quest-left { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; }
-.quest-btn { background:transparent; border:1px solid var(--border-light); color:var(--neon-purple); padding:6px 12px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; }
-.quest-btn.is-done { background:rgba(157,78,221,0.2); border-color:var(--neon-purple); color:var(--text-white); box-shadow:0 0 8px rgba(157,78,221,0.3); }
+/* Clickable Quests & Habits */
+.quest-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; user-select:none; transition:all 0.15s ease; }
+.quest-row:active { transform:scale(0.98); }
+.quest-row.is-done-row { background:rgba(157,78,221,0.08); border-color:rgba(157,78,221,0.3); }
+.quest-left { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; flex:1; }
+.quest-row.is-done-row .quest-left { color:var(--text-muted); text-decoration:line-through; }
+.quest-btn { background:transparent; border:1px solid var(--border-light); color:var(--neon-purple); padding:6px 12px; border-radius:8px; font-size:11px; font-weight:800; pointer-events:none; }
+.quest-btn.is-done { background:rgba(157,78,221,0.25); border-color:var(--neon-purple); color:var(--text-white); box-shadow:0 0 8px rgba(157,78,221,0.3); }
 
 /* Custom Quest Add Input */
 .custom-input-box { display:flex; gap:8px; margin-bottom:10px; }
@@ -157,13 +160,13 @@ canvas { width:100%; height:100%; }
 <div id="ranksList"></div>
 
 <!-- Daily Hunter Trial -->
-<div class="card" style="margin-top:14px; border-color:rgba(157,78,221,0.3);">
+<div class="card" style="margin-top:14px; border-color:rgba(157,78,221,0.3); cursor:pointer;" onclick="toggleTrial()">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
     <span style="font-size:11px; font-weight:800; color:var(--neon-purple);">⚔ DAILY HUNTER TRIAL</span>
     <span style="font-size:11px; font-weight:800; color:var(--neon-purple);">+250 EXP</span>
   </div>
   <div style="font-size:13px; font-weight:700; margin-bottom:12px;">Shadowbox 3 Non-Stop High-Intensity Rounds</div>
-  <button class="modal-btn" id="trialBtn" onclick="toggleTrial()" style="background:var(--neon-purple-btn); color:#fff; margin-top:0;">CLAIM +250 EXP</button>
+  <button class="modal-btn" id="trialBtn" style="background:var(--neon-purple-btn); color:#fff; margin-top:0; pointer-events:none;">CLAIM +250 EXP</button>
 </div>
 
 <!-- Daily Quests -->
@@ -258,12 +261,12 @@ let lastQuickSlipBackup = null;
 let quickUndoTimer = null;
 
 function saveState() {
-  localStorage.setItem('hunterHubState_v5', JSON.stringify(state));
+  localStorage.setItem('hunterHubState_v6', JSON.stringify(state));
   render();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('hunterHubState_v5');
+  const saved = localStorage.getItem('hunterHubState_v6');
   if (saved) {
     try { state = Object.assign(state, JSON.parse(saved)); } catch(e){}
   }
@@ -310,12 +313,13 @@ function applyCalStatus(type) {
   if (type === 'clear') {
     if (prev) {
       if (prev.status === 'clean') {
+        // Deduct clean reward
         state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
         state.streak = Math.max(0, state.streak - 1);
       } else if (prev.status === 'slip') {
-        // Refund exact slip penalty and restore streak
-        const refundedExp = Math.abs(prev.expDelta || 0);
-        state.exp += refundedExp;
+        // Refund EXACTLY what was actually deducted
+        const actualDeducted = Math.abs(prev.expDelta || 0);
+        state.exp += actualDeducted;
         state.streak = prev.prevStreak || 0;
       }
       delete state.calendar[selectedDay];
@@ -324,6 +328,7 @@ function applyCalStatus(type) {
   } else if (type === 'clean') {
     if (!prev || prev.status !== 'clean') {
       if (prev && prev.status === 'slip') {
+        // Refund only the actual deduction if it was a slip
         state.exp += Math.abs(prev.expDelta || 0);
         state.streak = prev.prevStreak || 0;
       }
@@ -338,12 +343,14 @@ function applyCalStatus(type) {
       state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
       state.streak = Math.max(0, state.streak - 1);
     }
-    const penalty = (state.streak < 5) ? 1100 : 200;
+    const maxPenalty = (state.streak < 5) ? 1100 : 200;
+    // Track exact penalty deducted (cannot deduct more than current exp)
+    const actualLoss = Math.min(state.exp, maxPenalty);
     const oldStreak = state.streak;
-    state.exp = Math.max(0, state.exp - penalty);
+    state.exp = state.exp - actualLoss;
     state.streak = 0;
-    state.calendar[selectedDay] = { status:'slip', expDelta: -penalty, prevStreak: oldStreak };
-    state.history.unshift({ day:selectedDay, status:'Relapse Slip', exp:-penalty, date:new Date().toLocaleDateString() });
+    state.calendar[selectedDay] = { status:'slip', expDelta: -actualLoss, prevStreak: oldStreak };
+    state.history.unshift({ day:selectedDay, status:'Relapse Slip', exp:-actualLoss, date:new Date().toLocaleDateString() });
   }
 
   updateGraph();
@@ -356,23 +363,22 @@ function openSlipModal() {
   document.getElementById('slipPenaltyExplanation').innerText = 
     `Current Streak: ${state.streak} days.\n` +
     (state.streak < 5 
-      ? `Streak is under 5 days. Confirming will deduct -1,100 EXP and reset your streak to 0.` 
-      : `Streak is 5+ days. Confirming will deduct -200 EXP and reset your streak to 0.`);
+      ? `Streak is under 5 days. Confirming will deduct up to -1,100 EXP and reset your streak.` 
+      : `Streak is 5+ days. Confirming will deduct up to -200 EXP and reset your streak.`);
   document.getElementById('slipModal').classList.add('open');
 }
 
 function executeSlip() {
-  const penalty = (state.streak < 5) ? 1100 : 200;
+  const maxPenalty = (state.streak < 5) ? 1100 : 200;
+  const actualLoss = Math.min(state.exp, maxPenalty);
   lastQuickSlipBackup = {
     exp: state.exp,
-    streak: state.streak,
-    penalty: penalty
+    streak: state.streak
   };
-  state.exp = Math.max(0, state.exp - penalty);
+  state.exp = state.exp - actualLoss;
   state.streak = 0;
-  state.history.unshift({ day:'Quick Slip', status:'Relapse Slip', exp:-penalty, date:new Date().toLocaleDateString() });
+  state.history.unshift({ day:'Quick Slip', status:'Relapse Slip', exp:-actualLoss, date:new Date().toLocaleDateString() });
 
-  // Expose undo button for 10 seconds
   const undoBtn = document.getElementById('quickUndoBtn');
   undoBtn.style.display = 'flex';
   clearTimeout(quickUndoTimer);
@@ -431,7 +437,8 @@ function toggleCustomQuest(id) {
   saveState();
 }
 
-function deleteCustomQuest(id) {
+function deleteCustomQuest(id, event) {
+  if (event) event.stopPropagation();
   const idx = state.customQuests.findIndex(item => item.id === id);
   if (idx === -1) return;
   if (state.customQuests[idx].done) {
@@ -526,34 +533,36 @@ function render() {
     trialBtn.style.border = 'none';
   }
 
-  // Daily Quests
+  // Quests (Entire row is clickable)
   const qWrap = document.getElementById('dailyQuestsList');
   qWrap.innerHTML = '';
   state.quests.forEach(q => {
     const row = document.createElement('div');
-    row.className = 'quest-row';
+    row.className = 'quest-row' + (q.done ? ' is-done-row' : '');
+    row.onclick = () => toggleQuest(q.id);
     row.innerHTML = `
       <div class="quest-left">${q.name}</div>
-      <button class="quest-btn ${q.done ? 'is-done' : ''}" onclick="toggleQuest(${q.id})">
+      <div class="quest-btn ${q.done ? 'is-done' : ''}">
         ${q.done ? '✓ DONE' : '+100 EXP'}
-      </button>
+      </div>
     `;
     qWrap.appendChild(row);
   });
 
-  // Custom Quests
+  // Custom Quests (Entire row clickable, delete button isolated)
   const cqWrap = document.getElementById('customQuestsList');
   cqWrap.innerHTML = '';
   state.customQuests.forEach(cq => {
     const row = document.createElement('div');
-    row.className = 'quest-row';
+    row.className = 'quest-row' + (cq.done ? ' is-done-row' : '');
+    row.onclick = () => toggleCustomQuest(cq.id);
     row.innerHTML = `
-      <div class="quest-left" style="${cq.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${cq.name}</div>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <button class="quest-btn ${cq.done ? 'is-done' : ''}" onclick="toggleCustomQuest(${cq.id})">
+      <div class="quest-left">${cq.name}</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="quest-btn ${cq.done ? 'is-done' : ''}">
           ${cq.done ? '✓ DONE' : '+50 EXP'}
-        </button>
-        <button onclick="deleteCustomQuest(${cq.id})" style="background:none; border:none; color:var(--text-dim); font-size:14px; cursor:pointer; padding:4px;">✕</button>
+        </div>
+        <button onclick="deleteCustomQuest(${cq.id}, event)" style="background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; padding:6px;">✕</button>
       </div>
     `;
     cqWrap.appendChild(row);
