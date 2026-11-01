@@ -47,6 +47,8 @@ body { background:var(--bg-dark); color:var(--text-white); padding:16px 14px 60p
 .progress-meta { display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:8px; }
 .progress-track { height:7px; background:var(--bg-subtle); border-radius:999px; overflow:hidden; }
 .progress-fill { height:100%; background:linear-gradient(90deg, #7b2cbf, #c77dff); border-radius:999px; transition:width 0.4s ease; box-shadow:0 0 10px var(--neon-purple-glow); }
+.hunter-level-line { display:flex; justify-content:space-between; gap:8px; margin-top:8px; font-size:10px; color:var(--text-muted); font-weight:700; }
+.hunter-level-line strong { color:var(--accent-cyan); font-weight:900; }
 
 /* Growth Graph */
 .graph-title-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
@@ -127,6 +129,7 @@ canvas { width:100%; height:100%; }
     <span id="nextRankText">Next: 2,000 EXP (D)</span>
   </div>
   <div class="progress-track"><div class="progress-fill" id="expProgressBar" style="width:0%;"></div></div>
+  <div class="hunter-level-line"><span id="hunterLevelText"><strong>Hunter Level 1</strong></span><span id="hunterLevelProgress">0 / 1,000 EXP to next level</span></div>
 </div>
 
 <!-- Growth Graph -->
@@ -144,8 +147,9 @@ canvas { width:100%; height:100%; }
 <!-- Combat Calendar -->
 <div class="card">
   <div style="display:flex; justify-content:space-between; align-items:center;">
-    <span class="graph-title">Combat Calendar</span>
-    <span style="font-size:11px; font-family:monospace; color:var(--neon-purple); font-weight:700;">Nov 2026</span>
+    <button class="btn-top btn-hist" id="calendarPrevBtn" onclick="changeCalendarMonth(-1)" aria-label="Previous month">‹</button>
+    <span class="graph-title" id="calendarMonthLabel">Combat Calendar</span>
+    <span style="width:32px"></span>
   </div>
   <div class="cal-grid" id="calGrid"></div>
   <div style="display:flex; justify-content:center; gap:16px; font-size:10px; color:var(--text-muted); font-weight:700;">
@@ -160,13 +164,14 @@ canvas { width:100%; height:100%; }
 <div id="ranksList"></div>
 
 <!-- Daily Hunter Trial -->
-<div class="card" style="margin-top:14px; border-color:rgba(157,78,221,0.3); cursor:pointer;" onclick="toggleTrial()">
+<div class="card" style="margin-top:14px; border-color:rgba(157,78,221,0.3);">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
     <span style="font-size:11px; font-weight:800; color:var(--neon-purple);">⚔ DAILY HUNTER TRIAL</span>
-    <span style="font-size:11px; font-weight:800; color:var(--neon-purple);">+250 EXP</span>
+    <span id="trialReward" style="font-size:11px; font-weight:800; color:var(--neon-purple);">+100 EXP</span>
   </div>
-  <div style="font-size:13px; font-weight:700; margin-bottom:12px;">Shadowbox 3 Non-Stop High-Intensity Rounds</div>
-  <button class="modal-btn" id="trialBtn" style="background:var(--neon-purple-btn); color:#fff; margin-top:0; pointer-events:none;">CLAIM +250 EXP</button>
+  <div id="trialCategory" style="font-size:10px; color:var(--text-muted); margin-bottom:5px;">RANDOM DAILY CHALLENGE</div>
+  <div id="trialQuestText" style="font-size:13px; font-weight:700; margin-bottom:12px;">Preparing today's trial...</div>
+  <button class="modal-btn" id="trialBtn" onclick="claimTrial()" style="background:var(--neon-purple-btn); color:#fff; margin-top:0;">CLAIM REWARD</button>
 </div>
 
 <!-- Daily Quests -->
@@ -180,6 +185,18 @@ canvas { width:100%; height:100%; }
   <button class="btn-add" onclick="addCustomQuest()">+ ADD</button>
 </div>
 <div id="customQuestsList"></div>
+
+<div class="section-hdr">System & Backups</div>
+<div class="card">
+  <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Your progress is stored in this browser on this device. Export a backup before clearing browser data or changing phones. There is no visible one-tap reset button, to protect against accidental data loss.</div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-add" style="padding:11px;flex:1" onclick="exportBackup()">⬇ Export Backup</button>
+    <button class="btn-add" style="padding:11px;flex:1" onclick="document.getElementById('backupFileInput').click()">⬆ Import Backup</button>
+  </div>
+  <input id="backupFileInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackup(event)">
+  <button class="modal-btn" style="background:var(--bg-subtle);color:var(--accent-red);margin-top:10px;" onclick="resetAllProgress()">Reset All Progress</button>
+  <div id="systemMessage" style="font-size:11px;color:var(--text-muted);margin-top:8px;"></div>
+</div>
 
 <!-- Calendar Edit Modal -->
 <div class="modal-overlay" id="calModal">
@@ -250,11 +267,18 @@ let state = {
   exp: 0,
   streak: 0,
   trialDone: false,
+  dailyTrial: null,
+  trialHistory: [],
   calendar: {}, // day: { status: 'clean'|'slip', expDelta: number, prevStreak: number }
   quests: JSON.parse(JSON.stringify(DEFAULT_QUESTS)),
   customQuests: [],
   history: [],
-  graphHistory: [{ day:'Start', exp:0, pmo:0 }]
+  graphHistory: [{ day:'Start', exp:0, pmo:0 }],
+  lastQuestDate: null,
+  perfectDayClaims: {},
+  urgeClaims: {},
+  calendarMonth: null,
+  lastQuickSlipBackup: null
 };
 
 let lastQuickSlipBackup = null;
@@ -270,11 +294,42 @@ function loadState() {
   if (saved) {
     try { state = Object.assign(state, JSON.parse(saved)); } catch(e){}
   }
+  if (!Array.isArray(state.trialHistory)) state.trialHistory = [];
+  if (!state.urgeClaims || typeof state.urgeClaims !== 'object') state.urgeClaims = {};
+  if (!state.perfectDayClaims || typeof state.perfectDayClaims !== 'object') state.perfectDayClaims = {};
+  if (!state.calendar || typeof state.calendar !== 'object') state.calendar = {};
+  // Migrate legacy day-number records into November 2026 date keys.
+  Object.keys(state.calendar).forEach(k => {
+    if (/^\d{1,2}$/.test(k)) {
+      const newKey = `2026-11-${String(Number(k)).padStart(2,'0')}`;
+      if (!state.calendar[newKey]) state.calendar[newKey] = state.calendar[k];
+      delete state.calendar[k];
+    }
+  });
+  const currentMonthKey = getLocalDateKey().slice(0,7);
+  if (!state.calendarMonth || state.calendarMonth > currentMonthKey) state.calendarMonth = currentMonthKey;
+  lastQuickSlipBackup = state.lastQuickSlipBackup || null;
+  if (lastQuickSlipBackup && lastQuickSlipBackup.expiresAt > Date.now()) {
+    document.getElementById('quickUndoBtn').style.display = 'flex';
+    clearTimeout(quickUndoTimer);
+    quickUndoTimer = setTimeout(() => {
+      lastQuickSlipBackup = null;
+      state.lastQuickSlipBackup = null;
+      document.getElementById('quickUndoBtn').style.display = 'none';
+      saveState();
+    }, lastQuickSlipBackup.expiresAt - Date.now());
+  } else {
+    lastQuickSlipBackup = null;
+    state.lastQuickSlipBackup = null;
+  }
+  resetDailyQuestsIfNeeded();
+  ensureDailyTrial();
   render();
 }
 
 function getDailyCleanExp(streakDays) {
-  const tier = Math.min(Math.floor(streakDays / 5) + 1, 5);
+  // 0–4 streak days: 100 EXP; 5–9: 200; 10–14: 300; 15–19: 400; 20+: 500.
+  const tier = Math.min(Math.floor(Math.max(0, streakDays) / 5) + 1, 5);
   return tier * 100;
 }
 
@@ -293,42 +348,75 @@ function getNextRank(exp) {
 }
 
 let selectedDay = null;
-function openDayModal(d) {
-  selectedDay = d;
-  document.getElementById('modalDayTitle').innerText = "November " + d + ", 2026";
-  const record = state.calendar[d];
+function parseMonthKey(key) {
+  const parts = key.split('-').map(Number);
+  return new Date(parts[0], parts[1]-1, 1);
+}
+function formatDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function changeCalendarMonth(delta) {
+  const currentKey = getLocalDateKey().slice(0,7);
+  const d = parseMonthKey(state.calendarMonth || currentKey);
+  d.setMonth(d.getMonth() + delta);
+  const targetKey = formatDateKey(d).slice(0,7);
+  // Never navigate to a future month.
+  if (targetKey > currentKey) return;
+  state.calendarMonth = targetKey;
+  saveState();
+}
+function openDayModal(dayKey) {
+  if (dayKey > getLocalDateKey()) return;
+  selectedDay = dayKey;
+  const date = new Date(dayKey + 'T12:00:00');
+  document.getElementById('modalDayTitle').innerText = date.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});
+  const record = state.calendar[dayKey];
   const rate = getDailyCleanExp(state.streak);
-  let sub = "Current Rate: +" + rate + " EXP / clean day";
-  if (record) {
-    sub = `Status: ${record.status.toUpperCase()} (${record.expDelta >= 0 ? '+' : ''}${record.expDelta} EXP)`;
-  }
-  document.getElementById('modalDaySub').innerText = sub;
+  const isHistorical = dayKey < getLocalDateKey();
+  document.getElementById('modalDaySub').innerText = isHistorical
+    ? (record ? `Historical record: ${record.status.toUpperCase()} · No EXP changes for backfilled dates` : 'Past date · You can record status, but no EXP will be added or removed')
+    : (record ? `Status: ${record.status.toUpperCase()} (${record.expDelta >= 0 ? '+' : ''}${record.expDelta} EXP)` : `Current Rate: +${rate} EXP / clean day`);
   document.getElementById('calModal').classList.add('open');
 }
 
 function applyCalStatus(type) {
-  if (!selectedDay) return;
-
+  if (!selectedDay || selectedDay > getLocalDateKey()) return;
+  const today = getLocalDateKey();
+  const isHistorical = selectedDay < today;
   const prev = state.calendar[selectedDay];
 
-  // Re-clicking the same status is a no-op: never apply the same reward/penalty twice.
   if (prev && prev.status === type && type !== 'clear') {
     closeModal('calModal');
     return;
   }
 
-  // Reverse the previous calendar action before replacing or clearing it.
-  // The stored delta is the exact EXP amount that was actually awarded/deducted.
+  // Historical backfills are editable for record-keeping, but never award/revoke EXP or alter streak.
+  if (isHistorical) {
+    if (type === 'clear') {
+      delete state.calendar[selectedDay];
+    } else {
+      state.calendar[selectedDay] = {
+        status: type,
+        expDelta: 0,
+        prevStreak: prev && Number.isFinite(prev.prevStreak) ? prev.prevStreak : state.streak,
+        historicalOnly: true
+      };
+    }
+    closeModal('calModal');
+    saveState();
+    return;
+  }
+
+  // Today's entry is the only calendar entry that changes EXP/streak.
   if (prev) {
-    if (prev.status === 'clean') {
-      state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
-      state.streak = Math.max(0, state.streak - 1);
-    } else if (prev.status === 'slip') {
-      state.exp += Math.abs(prev.expDelta || 0);
-      state.streak = Number.isFinite(prev.prevStreak) ? prev.prevStreak : 0;
+    state.exp = Math.max(0, state.exp - Number(prev.expDelta || 0));
+    if (prev.status === 'clean' && state.streak === Number(prev.prevStreak || 0) + 1) {
+      state.streak = Number(prev.prevStreak || 0);
+    } else if (prev.status === 'slip' && state.streak === 0 && Number.isFinite(prev.prevStreak)) {
+      state.streak = prev.prevStreak;
     }
     delete state.calendar[selectedDay];
-    state.history = state.history.filter(h => h.day !== selectedDay);
+    state.history = state.history.filter(h => !(h.dateKey === selectedDay && h.source === 'calendar'));
   }
 
   if (type === 'clean') {
@@ -336,46 +424,25 @@ function applyCalStatus(type) {
     const reward = getDailyCleanExp(previousStreak);
     state.streak = previousStreak + 1;
     state.exp += reward;
-    state.calendar[selectedDay] = {
-      status: 'clean',
-      expDelta: reward,
-      prevStreak: previousStreak
-    };
-    state.history.unshift({
-      day: selectedDay,
-      status: 'Clean',
-      exp: reward,
-      date: new Date().toLocaleDateString()
-    });
+    state.calendar[selectedDay] = {status:'clean', expDelta:reward, prevStreak:previousStreak};
+    state.history.unshift({day:selectedDay,status:'Clean',exp:reward,date:new Date().toLocaleDateString(),dateKey:selectedDay,source:'calendar'});
   } else if (type === 'slip') {
     const previousStreak = state.streak;
-    const maxPenalty = (previousStreak < 5) ? 1100 : 200;
-    const actualLoss = Math.min(state.exp, maxPenalty);
+    const maxPenalty = previousStreak < 5 ? 1100 : 200;
+    const actualLoss = Math.min(Math.max(0,state.exp), maxPenalty);
     state.exp -= actualLoss;
     state.streak = 0;
-    state.calendar[selectedDay] = {
-      status: 'slip',
-      expDelta: -actualLoss,
-      prevStreak: previousStreak
-    };
-    state.history.unshift({
-      day: selectedDay,
-      status: 'Relapse Slip',
-      exp: -actualLoss,
-      date: new Date().toLocaleDateString()
-    });
-  } else if (type !== 'clear') {
-    // Unknown status: do not leave a partially changed record.
-    if (prev) state.calendar[selectedDay] = prev;
-    closeModal('calModal');
-    saveState();
-    return;
+    state.calendar[selectedDay] = {status:'slip',expDelta:-actualLoss,prevStreak:previousStreak};
+    state.history.unshift({day:selectedDay,status:'Relapse Slip',exp:-actualLoss,date:new Date().toLocaleDateString(),dateKey:selectedDay,source:'calendar'});
+  } else if (type === 'clear') {
+    delete state.calendar[selectedDay];
   }
 
   updateGraph();
   closeModal('calModal');
   saveState();
 }
+
 function openSlipModal() {
   const penalty = (state.streak < 5) ? 1100 : 200;
   document.getElementById('slipPenaltyExplanation').innerText = 
@@ -391,8 +458,11 @@ function executeSlip() {
   const actualLoss = Math.min(state.exp, maxPenalty);
   lastQuickSlipBackup = {
     exp: state.exp,
-    streak: state.streak
+    streak: state.streak,
+    history: state.history.slice(),
+    expiresAt: Date.now() + 10000
   };
+  state.lastQuickSlipBackup = lastQuickSlipBackup;
   state.exp = state.exp - actualLoss;
   state.streak = 0;
   state.history.unshift({ day:'Quick Slip', status:'Relapse Slip', exp:-actualLoss, date:new Date().toLocaleDateString() });
@@ -403,6 +473,8 @@ function executeSlip() {
   quickUndoTimer = setTimeout(() => {
     undoBtn.style.display = 'none';
     lastQuickSlipBackup = null;
+    state.lastQuickSlipBackup = null;
+    saveState();
   }, 10000);
 
   updateGraph();
@@ -414,25 +486,80 @@ function undoQuickSlip() {
   if (!lastQuickSlipBackup) return;
   state.exp = lastQuickSlipBackup.exp;
   state.streak = lastQuickSlipBackup.streak;
-  state.history = state.history.filter(h => h.day !== 'Quick Slip');
+  state.history = lastQuickSlipBackup.history || state.history.filter(h => h.day !== 'Quick Slip');
   lastQuickSlipBackup = null;
+  state.lastQuickSlipBackup = null;
   document.getElementById('quickUndoBtn').style.display = 'none';
   updateGraph();
   saveState();
 }
 
-function toggleTrial() {
-  state.trialDone = !state.trialDone;
-  state.exp = state.trialDone ? state.exp + 250 : Math.max(0, state.exp - 250);
+const DAILY_TRIAL_POOL = [{"category":"Workout","text":"Do 5 minutes of gentle mobility before training","reward":100},{"category":"Workout","text":"Finish your planned workout without skipping the main lifts","reward":150},{"category":"Workout","text":"Record today’s workout sets and reps","reward":100},{"category":"Workout","text":"Do 2 sets of controlled push-ups, stopping before form breaks","reward":100},{"category":"Workout","text":"Train legs with your planned routine","reward":150},{"category":"Workout","text":"Do 3 sets of calf raises with controlled form","reward":100},{"category":"Workout","text":"Do 5 minutes of post-workout stretching","reward":100},{"category":"Workout","text":"Prepare your gym clothes and water bottle for tomorrow","reward":100},{"category":"Workout","text":"Take a short walk for recovery instead of extra exhausting cardio","reward":100},{"category":"Workout","text":"Check your workout form in a mirror or video for one exercise","reward":150},{"category":"Boxing","text":"Practise boxing stance and guard for 5 minutes","reward":100},{"category":"Boxing","text":"Do 3 relaxed shadowboxing rounds of 2 minutes","reward":150},{"category":"Boxing","text":"Practise footwork in 3 short rounds","reward":150},{"category":"Boxing","text":"Practise slips and rolls slowly for 5 minutes","reward":100},{"category":"Boxing","text":"Practise jab-cross technique with clean form for 5 minutes","reward":100},{"category":"Boxing","text":"Do 5 minutes of defensive movement without rushing","reward":100},{"category":"Boxing","text":"Review one boxing technique and practise it slowly","reward":150},{"category":"Boxing","text":"Do 3 rounds focused only on breathing and balance","reward":150},{"category":"Boxing","text":"Practise pivots and angle exits for 5 minutes","reward":100},{"category":"Boxing","text":"Cool down and loosen shoulders after boxing","reward":100},{"category":"Study","text":"Study one subject with your phone away for 20 minutes","reward":150},{"category":"Study","text":"Solve 5 mental-maths questions carefully","reward":100},{"category":"Study","text":"Revise one topic and write 3 key points from memory","reward":150},{"category":"Study","text":"Read 5 pages of a useful book","reward":100},{"category":"Study","text":"Complete one small pending college task","reward":150},{"category":"Study","text":"Practise English speaking aloud for 5 minutes","reward":100},{"category":"Study","text":"Learn 5 useful English words and make sentences with them","reward":100},{"category":"Study","text":"Explain one concept as if teaching a beginner","reward":150},{"category":"Study","text":"Organise notes for one subject for 10 minutes","reward":100},{"category":"Study","text":"Do a 25-minute focused study session with a short break after","reward":150},{"category":"Content","text":"Write 3 hooks for a future Reel or Short","reward":100},{"category":"Content","text":"Draft one 20–30 second script","reward":150},{"category":"Content","text":"Improve the first 2 seconds of an older script","reward":100},{"category":"Content","text":"Study one successful video and note its hook and pacing","reward":150},{"category":"Content","text":"Record a voiceover take for one piece of content","reward":150},{"category":"Content","text":"Edit one small section of a video","reward":150},{"category":"Content","text":"Create or improve one cover/title","reward":100},{"category":"Content","text":"Write one relatable example for a relationship topic","reward":100},{"category":"Content","text":"Review analytics for 10 minutes and note one lesson","reward":150},{"category":"Content","text":"Save 3 content ideas with a clear audience problem","reward":100},{"category":"Trading","text":"Review your trading rules before looking at charts","reward":100},{"category":"Trading","text":"Study one chart setup without placing a trade","reward":150},{"category":"Trading","text":"Write a short journal entry for a past trade","reward":100},{"category":"Trading","text":"Mark support and resistance on one chart for practice","reward":100},{"category":"Trading","text":"Review risk-to-reward on one hypothetical setup","reward":150},{"category":"Trading","text":"Backtest one setup on historical data for 15 minutes","reward":150},{"category":"Trading","text":"Write down what would invalidate your trade idea","reward":100},{"category":"Trading","text":"Review one mistake from your trading journal","reward":150},{"category":"Trading","text":"Spend 10 minutes learning a market concept","reward":100},{"category":"Trading","text":"Avoid impulsive trades and follow your written plan today","reward":150},{"category":"Communication","text":"Start one respectful conversation with someone","reward":150},{"category":"Communication","text":"Practise speaking slowly for 3 minutes","reward":100},{"category":"Communication","text":"Ask someone one thoughtful follow-up question","reward":100},{"category":"Communication","text":"Tell a short story with a beginning, middle and end","reward":150},{"category":"Communication","text":"Practise clear eye contact during one conversation","reward":100},{"category":"Communication","text":"Record a 1-minute speaking practice and review it kindly","reward":150},{"category":"Communication","text":"Explain your opinion in 3 clear sentences","reward":100},{"category":"Communication","text":"Listen without interrupting in one conversation","reward":150},{"category":"Communication","text":"Practise introducing yourself confidently for 2 minutes","reward":100},{"category":"Communication","text":"Replace filler words during a 2-minute speaking drill","reward":150},{"category":"Discipline","text":"Plan your top 3 priorities for tomorrow","reward":100},{"category":"Discipline","text":"Complete one 20-minute task before opening social media","reward":150},{"category":"Discipline","text":"Keep your phone away during one focused work block","reward":100},{"category":"Discipline","text":"Tidy your desk or workout area for 5 minutes","reward":100},{"category":"Discipline","text":"Finish one task you have been postponing","reward":150},{"category":"Discipline","text":"Do a 5-minute evening review: win, lesson, next step","reward":100},{"category":"Discipline","text":"Set a realistic bedtime reminder and prepare for it","reward":100},{"category":"Discipline","text":"Spend 10 minutes without scrolling or switching apps","reward":100},{"category":"Discipline","text":"Write down one trigger and a healthier response","reward":150},{"category":"Discipline","text":"Follow your planned routine even if motivation is low","reward":150},{"category":"Health","text":"Drink water regularly through the day","reward":100},{"category":"Health","text":"Include a protein-rich vegetarian food in a meal","reward":100},{"category":"Health","text":"Eat a proper meal without rushing or scrolling","reward":100},{"category":"Health","text":"Take 5 minutes for relaxed breathing","reward":100},{"category":"Health","text":"Get outside for daylight and a short walk","reward":100},{"category":"Health","text":"Prepare a simple snack instead of skipping a meal","reward":100},{"category":"Health","text":"Take a screen break and relax your eyes for 5 minutes","reward":100},{"category":"Health","text":"Do a gentle neck and shoulder mobility break","reward":100},{"category":"Health","text":"Keep a consistent wake-up time tomorrow by planning tonight","reward":100},{"category":"Health","text":"Notice your energy level and adjust training intensity sensibly","reward":150},{"category":"Mindset","text":"Write one thing you did well today and why","reward":100},{"category":"Mindset","text":"Read or listen to 10 minutes of educational material","reward":100},{"category":"Mindset","text":"Spend 5 minutes visualising the next useful action","reward":100},{"category":"Mindset","text":"Turn one vague goal into a specific 10-minute action","reward":100},{"category":"Mindset","text":"Write a short gratitude note without forcing positivity","reward":100},{"category":"Mindset","text":"Identify one distraction and remove it for an hour","reward":150},{"category":"Mindset","text":"Practise saying no to one low-value distraction","reward":150},{"category":"Mindset","text":"Review one personal value and act on it today","reward":100},{"category":"Mindset","text":"Do a 5-minute room reset before ending the day","reward":100},{"category":"Mindset","text":"Reflect on one setback and choose one practical correction","reward":150},{"category":"Life Skills","text":"Learn one basic clothing or grooming improvement","reward":100},{"category":"Life Skills","text":"Prepare tomorrow’s outfit so it fits and looks intentional","reward":100},{"category":"Life Skills","text":"Spend 10 minutes learning a useful computer or phone skill","reward":100},{"category":"Life Skills","text":"Check one expense and record it accurately","reward":100},{"category":"Life Skills","text":"Read one reliable article about a topic you want to understand","reward":100},{"category":"Life Skills","text":"Clean up 10 unnecessary files, tabs or screenshots","reward":100},{"category":"Life Skills","text":"Practise writing a clear professional message","reward":100},{"category":"Life Skills","text":"Do one small helpful task for your family or home","reward":100},{"category":"Life Skills","text":"Research one skill that could improve your future income","reward":150},{"category":"Life Skills","text":"Review this week’s progress and choose one adjustment","reward":150}];
+
+function getLocalDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function ensureDailyTrial() {
+  const today = getLocalDateKey();
+  if (state.dailyTrial && state.dailyTrial.date === today) return;
+  const recentIds = new Set((state.trialHistory || []).slice(-7).map(x => x.id));
+  let candidates = DAILY_TRIAL_POOL.map((q, i) => ({...q, id:i+1})).filter(q => !recentIds.has(q.id));
+  if (!candidates.length) candidates = DAILY_TRIAL_POOL.map((q, i) => ({...q, id:i+1}));
+  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  state.dailyTrial = {...chosen, date:today, done:false};
+  state.trialDone = false;
+  saveState();
+}
+
+function claimTrial() {
+  ensureDailyTrial();
+  const trial = state.dailyTrial;
+  if (!trial || trial.done) return;
+  trial.done = true;
+  state.trialDone = true;
+  state.exp += trial.reward;
+  state.history.unshift({day:'Daily Trial', status:trial.category + ': ' + trial.text, exp:trial.reward, date:new Date().toLocaleDateString()});
+  state.trialHistory = (state.trialHistory || []).concat([{id:trial.id, date:trial.date}]).slice(-100);
   updateGraph();
   saveState();
 }
 
+
+function resetDailyQuestsIfNeeded() {
+  const today = getLocalDateKey();
+  if (state.lastQuestDate === today) return false;
+  // Daily habits reset at the date boundary; earned EXP and history remain.
+  (state.quests || []).forEach(q => q.done = false);
+  (state.customQuests || []).forEach(q => q.done = false);
+  state.lastQuestDate = today;
+  return true;
+}
+
+function checkPerfectDayBonus() {
+  const today = getLocalDateKey();
+  if (!Array.isArray(state.quests) || state.quests.length !== 7) return false;
+  if (!state.quests.every(q => q.done) || state.perfectDayClaims[today]) return false;
+  state.perfectDayClaims[today] = true;
+  state.exp += 200;
+  state.history.unshift({
+    day: 'Perfect Day',
+    status: 'All 7 daily habits completed',
+    exp: 200,
+    date: new Date().toLocaleDateString(),
+    dateKey: today,
+    source: 'perfect-day'
+  });
+  updateGraph();
+  return true;
+}
 function toggleQuest(id) {
   const q = state.quests.find(item => item.id === id);
   if (!q) return;
   q.done = !q.done;
   state.exp = q.done ? state.exp + 100 : Math.max(0, state.exp - 100);
+  checkPerfectDayBonus();
   updateGraph();
   saveState();
 }
@@ -477,6 +604,7 @@ function updateGraph() {
 }
 
 function render() {
+  resetDailyQuestsIfNeeded();
   const curRank = getCurrentRank(state.exp);
   const nextRank = getNextRank(state.exp);
 
@@ -488,6 +616,11 @@ function render() {
   document.getElementById('tierMultiplierText').innerText = `⚡ Tier ${curTier}: +${curDailyExp} EXP / Day ${curTier === 5 ? '(MAX)' : ''}`;
 
   document.getElementById('expText').innerText = `${state.exp.toLocaleString()} EXP`;
+  // Hunter level is a compact second progression: every 1,000 total EXP adds one level.
+  const hunterLevel = Math.floor(Math.max(0, state.exp) / 1000) + 1;
+  const levelExp = Math.max(0, state.exp) % 1000;
+  document.getElementById('hunterLevelText').innerHTML = `<strong>Hunter Level ${hunterLevel}</strong>`;
+  document.getElementById('hunterLevelProgress').innerText = `${levelExp.toLocaleString()} / 1,000 EXP to next level`;
   if (nextRank) {
     const prevCap = curRank.exp;
     const nextCap = nextRank.exp;
@@ -502,22 +635,41 @@ function render() {
   // Calendar
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
-  for (let i = 1; i <= 30; i++) {
+  const currentMonthKey = getLocalDateKey().slice(0,7);
+  let monthKey = state.calendarMonth || currentMonthKey;
+  if (monthKey > currentMonthKey) monthKey = currentMonthKey;
+  state.calendarMonth = monthKey;
+  const monthDate = parseMonthKey(monthKey);
+  document.getElementById('calendarMonthLabel').innerText = monthDate.toLocaleDateString(undefined,{month:'short',year:'numeric'}).toUpperCase();
+  const prevBtn = document.getElementById('calendarPrevBtn');
+  if (prevBtn) prevBtn.style.visibility = monthKey === currentMonthKey ? 'hidden' : 'visible';
+  const firstWeekday = new Date(monthDate.getFullYear(),monthDate.getMonth(),1).getDay();
+  const daysInMonth = new Date(monthDate.getFullYear(),monthDate.getMonth()+1,0).getDate();
+  for (let blank=0; blank<firstWeekday; blank++) {
+    const spacer=document.createElement('div'); spacer.style.aspectRatio='1'; grid.appendChild(spacer);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
     const cell = document.createElement('div');
     cell.className = 'cal-cell';
-    const rec = state.calendar[i];
+    const dayKey = `${monthKey}-${String(i).padStart(2,'0')}`;
+    const rec = state.calendar[dayKey];
     let icon = '·';
     if (rec) {
-      if (rec.status === 'clean') {
-        cell.classList.add('is-clean');
-        icon = '✓';
-      } else if (rec.status === 'slip') {
-        cell.classList.add('is-slip');
-        icon = '✕';
-      }
+      if (rec.status === 'clean') { cell.classList.add('is-clean'); icon = '✓'; }
+      else if (rec.status === 'slip') { cell.classList.add('is-slip'); icon = '✕'; }
+    }
+    if (dayKey === getLocalDateKey()) cell.style.outline = '1px solid var(--accent-cyan)';
+    const isFuture = dayKey > getLocalDateKey();
+    if (isFuture) {
+      cell.style.opacity = '0.25';
+      cell.style.cursor = 'default';
+      cell.title = 'Future dates cannot be marked';
+    } else {
+      cell.style.cursor = 'pointer';
+      cell.title = 'Tap to mark or edit this day';
+      cell.onclick = () => openDayModal(dayKey);
     }
     cell.innerHTML = `<span class="cal-num">${i}</span><span class="cal-status">${icon}</span>`;
-    cell.onclick = () => openDayModal(i);
     grid.appendChild(cell);
   }
 
@@ -539,17 +691,40 @@ function render() {
     ranksWrap.appendChild(item);
   });
 
-  // Daily Hunter Trial
+  // Daily Hunter Trial: one random, practical challenge per local day
+  ensureDailyTrial();
+  const trial = state.dailyTrial;
+  document.getElementById('trialReward').innerText = `+${trial.reward} EXP`;
+  document.getElementById('trialCategory').innerText = `${trial.category.toUpperCase()} • DAILY RANDOM CHALLENGE`;
+  document.getElementById('trialQuestText').innerText = trial.text;
   const trialBtn = document.getElementById('trialBtn');
-  if (state.trialDone) {
-    trialBtn.innerText = '✓ COMPLETED (+250 EXP)';
+  if (trial.done) {
+    trialBtn.innerText = `✓ COMPLETED (+${trial.reward} EXP)`;
     trialBtn.style.background = 'rgba(157,78,221,0.2)';
     trialBtn.style.border = '1px solid var(--neon-purple)';
+    trialBtn.disabled = true;
+    trialBtn.style.opacity = '0.85';
   } else {
-    trialBtn.innerText = 'CLAIM +250 EXP';
+    trialBtn.innerText = `CLAIM +${trial.reward} EXP`;
     trialBtn.style.background = 'var(--neon-purple-btn)';
     trialBtn.style.border = 'none';
+    trialBtn.disabled = false;
+    trialBtn.style.opacity = '1';
   }
+
+  // Perfect-day progress and once-per-date bonus status.
+  const completedHabits = state.quests.filter(q => q.done).length;
+  let perfectDayStatus = document.getElementById('perfectDayStatus');
+  if (!perfectDayStatus) {
+    perfectDayStatus = document.createElement('div');
+    perfectDayStatus.id = 'perfectDayStatus';
+    perfectDayStatus.style.cssText = 'font-size:12px;color:var(--text-muted);margin:0 0 10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-subtle);';
+    document.getElementById('dailyQuestsList').parentNode.insertBefore(perfectDayStatus, document.getElementById('dailyQuestsList'));
+  }
+  const bonusClaimed = !!state.perfectDayClaims[getLocalDateKey()];
+  perfectDayStatus.innerText = bonusClaimed
+    ? `🏆 PERFECT DAY COMPLETE · +200 BONUS EXP CLAIMED`
+    : `🎯 DAILY HABITS: ${completedHabits}/7 · Complete all 7 for +200 BONUS EXP`;
 
   // Quests (Entire row is clickable)
   const qWrap = document.getElementById('dailyQuestsList');
@@ -594,7 +769,7 @@ function render() {
     histBox.innerHTML = state.history.map(h => `
       <div style="border-bottom:1px solid var(--border); padding:8px 0;">
         <div style="display:flex; justify-content:space-between; font-weight:700;">
-          <span style="color:var(--text-white);">${typeof h.day === 'number' ? 'Nov ' + h.day : h.day}</span>
+          <span style="color:var(--text-white);">${h.dateKey ? h.dateKey : (typeof h.day === 'number' ? 'Nov ' + h.day : h.day)}</span>
           <span style="color:${h.exp >= 0 ? 'var(--neon-purple)' : 'var(--accent-red)'};">${h.exp >= 0 ? '+' : ''}${h.exp} EXP</span>
         </div>
         <div style="font-size:11px; color:var(--text-muted);">${h.status} · ${h.date || ''}</div>
@@ -661,10 +836,18 @@ let urgeInterval = null;
 let urgeSeconds = 180;
 function openUrgeModal() {
   urgeSeconds = 180;
-  document.getElementById('urgeTimer').innerText = '03:00';
+  const today = getLocalDateKey();
+  const claimed = !!state.urgeClaims[today];
+  document.getElementById('urgeTimer').innerText = claimed ? 'DONE' : '03:00';
   document.getElementById('urgeClaimBtn').style.display = 'none';
+  document.getElementById('urgeClaimBtn').disabled = claimed;
+  document.getElementById('urgeClaimBtn').innerText = claimed ? '✓ Reward already claimed today' : '✓ Defeated Boss (+150 EXP)';
   document.getElementById('urgeModal').classList.add('open');
   clearInterval(urgeInterval);
+  if (claimed) {
+    document.getElementById('urgeModal').classList.add('open');
+    return;
+  }
   urgeInterval = setInterval(() => {
     urgeSeconds--;
     const m = String(Math.floor(urgeSeconds / 60)).padStart(2, '0');
@@ -678,7 +861,12 @@ function openUrgeModal() {
 }
 
 function claimUrgeVictory() {
+  const today = getLocalDateKey();
+  if (state.urgeClaims[today]) return;
+  if (urgeSeconds > 0) return;
+  state.urgeClaims[today] = true;
   state.exp += 150;
+  state.history.unshift({day:'Urge Boss',status:'Urge timer completed',exp:150,date:new Date().toLocaleDateString(),dateKey:today,source:'urge'});
   updateGraph();
   closeUrgeModal();
   saveState();
@@ -692,8 +880,73 @@ function closeUrgeModal() {
 function openHistoryModal() { document.getElementById('historyModal').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
+
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `hunter-hub-backup-${getLocalDateKey()}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  document.getElementById('systemMessage').innerText = 'Backup exported. Keep the JSON file somewhere safe.';
+}
+function importBackup(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const incoming = JSON.parse(reader.result);
+      if (!incoming || typeof incoming !== 'object' || !Number.isFinite(Number(incoming.exp)) || !Array.isArray(incoming.quests)) throw new Error('Invalid backup');
+      if (!confirm('Import this backup and replace the current tracker progress?')) return;
+      state = Object.assign(state, incoming);
+      if (!Array.isArray(state.trialHistory)) state.trialHistory = [];
+      resetDailyQuestsIfNeeded();
+      ensureDailyTrial();
+      saveState();
+      document.getElementById('systemMessage').innerText = 'Backup imported successfully.';
+    } catch (e) {
+      document.getElementById('systemMessage').innerText = 'Could not import: this file is not a valid Hunter Hub backup.';
+    } finally { event.target.value = ''; }
+  };
+  reader.readAsText(file);
+}
+function resetAllProgress() {
+  if (!confirm('This permanently resets EXP, streak, calendar, quests and history on this device. Export a backup first if needed.')) return;
+  localStorage.removeItem('hunterHubState_v6');
+  state = {
+    exp:0, streak:0, trialDone:false, dailyTrial:null, trialHistory:[], calendar:{},
+    quests:JSON.parse(JSON.stringify(DEFAULT_QUESTS)), customQuests:[], history:[],
+    graphHistory:[{day:'Start',exp:0,pmo:0}], lastQuestDate:null, perfectDayClaims:{}, urgeClaims:{},
+    calendarMonth:getLocalDateKey().slice(0,7), lastQuickSlipBackup:null
+  };
+  lastQuickSlipBackup = null;
+  resetDailyQuestsIfNeeded();
+  ensureDailyTrial();
+  saveState();
+  document.getElementById('systemMessage').innerText = 'Progress reset.';
+}
+
+let lastObservedDate = null;
+function checkDateBoundary() {
+  const today = getLocalDateKey();
+  if (lastObservedDate === null) {
+    lastObservedDate = today;
+    return;
+  }
+  if (today !== lastObservedDate) {
+    lastObservedDate = today;
+    resetDailyQuestsIfNeeded();
+    ensureDailyTrial();
+    state.calendarMonth = today.slice(0,7);
+    saveState();
+  }
+}
 window.addEventListener('resize', drawGraph);
-window.onload = loadState;
+window.onload = () => {
+  loadState();
+  lastObservedDate = getLocalDateKey();
+  setInterval(checkDateBoundary, 15000);
+};
 </script>
 </body>
 </html>
