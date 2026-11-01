@@ -1,1005 +1,672 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hunter Hub — Discipline & Growth Engine</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hunter Hub — Discipline Engine</title>
+<style>
+:root {
+  --bg-dark: #0a0714;
+  --bg-card: #130f24;
+  --bg-card-alt: #18132d;
+  --bg-subtle: #1e1838;
+  --border: #29204a;
+  --border-light: #3d306b;
+  --neon-purple: #9d4edd;
+  --neon-purple-glow: rgba(157, 78, 221, 0.4);
+  --neon-purple-active: #b5179e;
+  --neon-purple-btn: #7b2cbf;
+  --accent-cyan: #00f0ff;
+  --accent-red: #ff3366;
+  --text-white: #f3f0fb;
+  --text-muted: #8b80aa;
+  --text-dim: #5c5379;
+}
 
-    :root {
-      --bg-dark: #0a0714;
-      --card-bg: #130f24;
-      --card-border: #231c3d;
-      --card-inner: #191430;
-      --neon-purple: #9d4edd;
-      --bright-purple: #c77dff;
-      --glow-purple: rgba(157, 78, 221, 0.4);
-      --neon-cyan: #00f0ff;
-      --neon-green: #10b981;
-      --danger-red: #ef4444;
-      --muted-txt: #6d638c;
-      --light-txt: #f1edff;
-    }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+body { background:var(--bg-dark); color:var(--text-white); padding:16px 14px 60px; max-width:480px; margin:0 auto; min-height:100vh; }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
+/* Top Header */
+.top-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:0 4px; }
+.hub-title { display:flex; align-items:center; gap:8px; font-size:19px; font-weight:800; letter-spacing:0.5px; }
+.hub-dot { width:9px; height:9px; border-radius:50%; background:var(--neon-purple); box-shadow:0 0 10px var(--neon-purple); }
+.top-actions { display:flex; gap:6px; align-items:center; }
+.btn-top { border:none; padding:7px 11px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; }
+.btn-urge { background:rgba(255, 51, 102, 0.12); color:var(--accent-red); border:1px solid rgba(255, 51, 102, 0.3); }
+.btn-slip { background:rgba(255, 180, 0, 0.12); color:#ffb400; border:1px solid rgba(255, 180, 0, 0.3); }
+.btn-undo { background:rgba(0, 240, 255, 0.15); color:var(--accent-cyan); border:1px solid rgba(0, 240, 255, 0.4); display:none; }
+.btn-hist { background:rgba(157, 78, 221, 0.15); color:var(--neon-purple); border:1px solid rgba(157, 78, 221, 0.35); }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--light-txt);
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      margin: 0;
-      padding: 0;
-    }
+/* Main Card */
+.card { background:var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.35); }
+.streak-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+.rank-subtitle { color:var(--neon-purple); font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+.system-tag { background:rgba(157,78,221,0.12); border:1px solid rgba(157,78,221,0.25); color:var(--neon-purple); font-family:monospace; font-size:9px; padding:3px 7px; border-radius:5px; }
+.streak-counter { font-size:32px; font-weight:900; letter-spacing:-0.5px; margin:6px 0 2px; }
+.tier-tag { display:inline-block; font-size:10px; font-weight:700; color:var(--accent-cyan); background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.25); border-radius:6px; padding:2px 7px; margin-bottom:12px; }
+.progress-meta { display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:8px; }
+.progress-track { height:7px; background:var(--bg-subtle); border-radius:999px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg, #7b2cbf, #c77dff); border-radius:999px; transition:width 0.4s ease; box-shadow:0 0 10px var(--neon-purple-glow); }
 
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
+/* Growth Graph */
+.graph-title-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.graph-title { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; }
+.graph-legend { display:flex; gap:12px; font-size:10px; font-weight:700; }
+.legend-item { display:flex; align-items:center; gap:5px; }
+.legend-dot { width:7px; height:7px; border-radius:50%; }
+.legend-exp { background:var(--neon-purple); box-shadow:0 0 6px var(--neon-purple); }
+.legend-pmo { background:#2ec4b6; }
+.canvas-wrap { width:100%; height:110px; position:relative; }
+canvas { width:100%; height:100%; }
 
-    /* Ambient Background Glow */
-    .ambient-glow {
-      position: fixed;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 520px;
-      height: 280px;
-      background: radial-gradient(circle at 50% 10%, rgba(157, 78, 221, 0.18) 0%, rgba(10, 7, 20, 0) 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
+/* Combat Calendar */
+.cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; margin:14px 0 10px; }
+.cal-cell { background:var(--bg-card-alt); border:1px solid var(--border); border-radius:10px; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; position:relative; transition:all 0.15s; }
+.cal-cell:active { transform:scale(0.94); }
+.cal-num { font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:2px; }
+.cal-status { font-size:10px; font-weight:900; color:var(--text-dim); }
+.cal-cell.is-clean { border-color:var(--neon-purple); background:rgba(157,78,221,0.15); box-shadow:0 0 8px rgba(157,78,221,0.25); }
+.cal-cell.is-clean .cal-status { color:var(--neon-purple); }
+.cal-cell.is-clean .cal-num { color:var(--text-white); }
+.cal-cell.is-slip { border-color:var(--accent-red); background:rgba(255,51,102,0.15); }
+.cal-cell.is-slip .cal-status { color:var(--accent-red); }
 
-    /* Neon Purple Shadow Utilities */
-    .glow-p {
-      box-shadow: 0 0 16px var(--glow-purple);
-    }
-    .glow-p-lg {
-      box-shadow: 0 0 28px rgba(157, 78, 221, 0.55);
-    }
-    .glow-border {
-      border: 1px solid rgba(157, 78, 221, 0.5);
-    }
+/* Hunter Ranks */
+.section-hdr { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin:16px 2px 10px; }
+.rank-item { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-radius:12px; background:var(--bg-card); border:1px solid var(--border); margin-bottom:6px; }
+.rank-item.is-active { border-color:var(--neon-purple); background:rgba(157,78,221,0.14); box-shadow:0 0 12px rgba(157,78,221,0.25); }
+.rank-name { font-size:13px; font-weight:700; }
+.rank-exp { font-size:11px; font-family:monospace; color:var(--text-muted); font-weight:600; }
+.badge-active { background:var(--neon-purple); color:#fff; font-size:9px; font-weight:900; padding:2px 8px; border-radius:6px; letter-spacing:0.5px; }
 
-    /* Rank active card */
-    .rank-active-card {
-      background: linear-gradient(90deg, rgba(157, 78, 221, 0.18) 0%, rgba(25, 20, 48, 0.95) 100%);
-      border: 1.5px solid #9d4edd !important;
-      box-shadow: 0 0 14px rgba(157, 78, 221, 0.35);
-    }
+/* Daily & Custom Quests */
+.quest-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; }
+.quest-left { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; }
+.quest-btn { background:transparent; border:1px solid var(--border-light); color:var(--neon-purple); padding:6px 12px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; }
+.quest-btn.is-done { background:rgba(157,78,221,0.2); border-color:var(--neon-purple); color:var(--text-white); box-shadow:0 0 8px rgba(157,78,221,0.3); }
 
-    /* Toast Notification */
-    .toast-popup {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translate(-50%, -100%);
-      background: #191430;
-      border: 1px solid #9d4edd;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 15px var(--glow-purple);
-      border-radius: 9999px;
-      padding: 10px 24px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 999;
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      opacity: 0;
-      pointer-events: none;
-    }
-    .toast-popup.active {
-      transform: translate(-50%, 0);
-      opacity: 1;
-    }
+/* Custom Quest Add Input */
+.custom-input-box { display:flex; gap:8px; margin-bottom:10px; }
+.custom-inp { flex:1; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text-white); font-size:13px; outline:none; }
+.custom-inp:focus { border-color:var(--neon-purple); }
+.btn-add { background:var(--neon-purple-btn); border:none; border-radius:10px; padding:0 16px; font-size:12px; font-weight:800; color:#fff; cursor:pointer; }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0a0714;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #231c3d;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #9d4edd;
-    }
-
-    /* Modal Backdrop */
-    .modal-backdrop {
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      background-color: rgba(5, 3, 10, 0.85);
-    }
-  </style>
+/* Modals */
+.modal-overlay { position:fixed; inset:0; background:rgba(6,3,13,0.85); backdrop-filter:blur(4px); z-index:999; display:none; align-items:center; justify-content:center; padding:16px; }
+.modal-overlay.open { display:flex; }
+.modal-card { background:var(--bg-card); border:1px solid var(--border-light); border-radius:18px; padding:22px; width:100%; max-width:340px; text-align:center; box-shadow:0 16px 36px rgba(0,0,0,0.6); }
+.modal-btn { width:100%; border:none; border-radius:10px; padding:12px; font-size:13px; font-weight:800; cursor:pointer; margin-top:8px; }
+</style>
 </head>
-<body class="p-3 sm:p-5 flex justify-center">
+<body>
 
-  <div class="ambient-glow"></div>
+<!-- Header -->
+<div class="top-header">
+  <div class="hub-title"><span class="hub-dot"></span>Hunter Hub</div>
+  <div class="top-actions">
+    <button class="btn-top btn-undo" id="quickUndoBtn" onclick="undoQuickSlip()">↩️ Undo Slip</button>
+    <button class="btn-top btn-urge" onclick="openUrgeModal()">⚔️ Urge</button>
+    <button class="btn-top btn-slip" onclick="openSlipModal()">⚠️ Slip</button>
+    <button class="btn-top btn-hist" onclick="openHistoryModal()">📜 History</button>
+  </div>
+</div>
 
-  <!-- Central App Container (Mobile First) -->
-  <div class="w-full max-w-[480px] relative z-10 pb-16 flex flex-col gap-4">
+<!-- Main Status -->
+<div class="card">
+  <div class="streak-header">
+    <span class="rank-subtitle" id="currentRankTitle">E · Iron Hunter</span>
+    <span class="system-tag">SYSTEM ACTIVE</span>
+  </div>
+  <div class="streak-counter" id="streakText">0 Days Streak</div>
+  <div class="tier-tag" id="tierMultiplierText">⚡ Tier 1: +100 EXP / Day</div>
+  <div class="progress-meta">
+    <span id="expText">0 EXP</span>
+    <span id="nextRankText">Next: 2,000 EXP (D)</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="expProgressBar" style="width:0%;"></div></div>
+</div>
 
-    <!-- Top Bar -->
-    <header class="flex items-center justify-between pt-1 pb-2">
-      <div class="flex items-center gap-2">
-        <div class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse glow-p"></div>
-        <h1 class="text-xl font-black tracking-wide text-white font-mono">Hunter Hub</h1>
+<!-- Growth Graph -->
+<div class="card">
+  <div class="graph-title-row">
+    <span class="graph-title">Growth Graph (EXP & Streak)</span>
+    <div class="graph-legend">
+      <div class="legend-item"><span class="legend-dot legend-exp"></span> EXP</div>
+      <div class="legend-item"><span class="legend-dot legend-pmo"></span> PMO</div>
+    </div>
+  </div>
+  <div class="canvas-wrap"><canvas id="growthCanvas"></canvas></div>
+</div>
+
+<!-- Combat Calendar -->
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <span class="graph-title">Combat Calendar</span>
+    <span style="font-size:11px; font-family:monospace; color:var(--neon-purple); font-weight:700;">Nov 2026</span>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div style="display:flex; justify-content:center; gap:16px; font-size:10px; color:var(--text-muted); font-weight:700;">
+    <span><span style="color:var(--neon-purple);">●</span> Clean</span>
+    <span><span style="color:var(--accent-red);">●</span> Slip</span>
+    <span><span style="color:var(--text-dim);">●</span> Untracked</span>
+  </div>
+</div>
+
+<!-- Hunter Ranks -->
+<div class="section-hdr">Hunter Ranks</div>
+<div id="ranksList"></div>
+
+<!-- Daily Hunter Trial -->
+<div class="card" style="margin-top:14px; border-color:rgba(157,78,221,0.3);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+    <span style="font-size:11px; font-weight:800; color:var(--neon-purple);">⚔ DAILY HUNTER TRIAL</span>
+    <span style="font-size:11px; font-weight:800; color:var(--neon-purple);">+250 EXP</span>
+  </div>
+  <div style="font-size:13px; font-weight:700; margin-bottom:12px;">Shadowbox 3 Non-Stop High-Intensity Rounds</div>
+  <button class="modal-btn" id="trialBtn" onclick="toggleTrial()" style="background:var(--neon-purple-btn); color:#fff; margin-top:0;">CLAIM +250 EXP</button>
+</div>
+
+<!-- Daily Quests -->
+<div class="section-hdr">Daily Quests (+100 EXP)</div>
+<div id="dailyQuestsList"></div>
+
+<!-- Custom Quests -->
+<div class="section-hdr">Custom Quests (+50 EXP)</div>
+<div class="custom-input-box">
+  <input type="text" id="customQuestInput" class="custom-inp" placeholder="Add custom discipline objective..." onkeydown="if(event.key==='Enter') addCustomQuest()">
+  <button class="btn-add" onclick="addCustomQuest()">+ ADD</button>
+</div>
+<div id="customQuestsList"></div>
+
+<!-- Calendar Edit Modal -->
+<div class="modal-overlay" id="calModal">
+  <div class="modal-card">
+    <div style="font-size:18px; font-weight:900; margin-bottom:4px;" id="modalDayTitle">Day</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;" id="modalDaySub">Adjust status</div>
+    <button class="modal-btn" onclick="applyCalStatus('clean')" style="background:rgba(157,78,221,0.2); border:1px solid var(--neon-purple); color:var(--text-white);">✓ Mark Clean (Earn Daily EXP)</button>
+    <button class="modal-btn" onclick="applyCalStatus('slip')" style="background:rgba(255,51,102,0.18); border:1px solid var(--accent-red); color:var(--accent-red);">⚠️ Mark Slip / Relapse</button>
+    <button class="modal-btn" onclick="applyCalStatus('clear')" style="background:var(--bg-subtle); color:var(--accent-cyan); border:1px solid rgba(0,240,255,0.3);">↩️ Clear Record & Restore EXP</button>
+    <button class="modal-btn" onclick="closeModal('calModal')" style="background:none; color:var(--text-dim); font-size:12px;">Cancel</button>
+  </div>
+</div>
+
+<!-- Urge Boss Modal -->
+<div class="modal-overlay" id="urgeModal">
+  <div class="modal-card" style="border-color:var(--accent-red);">
+    <div style="font-size:18px; font-weight:900; color:var(--accent-red);">⚔️ URGE BOSS FIGHT</div>
+    <div style="font-size:11px; color:var(--text-muted); margin:4px 0 12px;">3-MINUTE DOPAMINE RE-ALIGNMENT</div>
+    <div id="urgeTimer" style="font-size:48px; font-family:monospace; font-weight:900; margin-bottom:8px;">03:00</div>
+    <div style="font-size:12px; color:var(--text-muted); line-height:1.4; margin-bottom:14px;">Drop phone immediately. Do 25 pushups or splash ice cold water on your face.</div>
+    <button class="modal-btn" id="urgeClaimBtn" onclick="claimUrgeVictory()" style="display:none; background:var(--neon-purple-btn); color:#fff;">✓ Defeated Boss (+150 EXP)</button>
+    <button class="modal-btn" onclick="closeUrgeModal()" style="background:var(--bg-subtle); color:var(--text-muted);">Retreat</button>
+  </div>
+</div>
+
+<!-- Slip Confirmation Modal -->
+<div class="modal-overlay" id="slipModal">
+  <div class="modal-card" style="border-color:var(--accent-red);">
+    <div style="font-size:18px; font-weight:900; color:var(--accent-red);">Confirm Relapse</div>
+    <div id="slipPenaltyExplanation" style="font-size:12px; color:var(--text-muted); line-height:1.5; margin:10px 0 16px;"></div>
+    <button class="modal-btn" onclick="executeSlip()" style="background:var(--accent-red); color:#fff;">Confirm Slip</button>
+    <button class="modal-btn" onclick="closeModal('slipModal')" style="background:var(--bg-subtle); color:var(--text-muted);">Cancel</button>
+  </div>
+</div>
+
+<!-- History Log Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-card" style="max-height:80vh; overflow-y:auto; text-align:left;">
+    <div style="font-size:16px; font-weight:900; margin-bottom:10px; color:var(--neon-purple);">Discipline Battle Log</div>
+    <div id="historyEntries" style="font-size:12px; color:var(--text-muted); line-height:1.6;">No combat cycles recorded yet.</div>
+    <button class="modal-btn" onclick="closeModal('historyModal')" style="background:var(--bg-subtle); color:var(--text-muted); margin-top:14px;">Close Log</button>
+  </div>
+</div>
+
+<script>
+const RANKS = [
+  { r:"SSS", name:"The Awakened One", exp:500000 },
+  { r:"SS",  name:"Absolute",          exp:250000 },
+  { r:"S",   name:"S-Rank Hunter",      exp:120000 },
+  { r:"A",   name:"Shadow Monarch",     exp:60000  },
+  { r:"B",   name:"Gold Hunter",        exp:25000  },
+  { r:"C",   name:"Silver Hunter",      exp:8000   },
+  { r:"D",   name:"Bronze Hunter",      exp:2000   },
+  { r:"E",   name:"Iron Hunter",        exp:0      }
+];
+
+const DEFAULT_QUESTS = [
+  { id:1, name:"🌅 Morning affirmations", done:false },
+  { id:2, name:"🧘 Morning meditation",   done:false },
+  { id:3, name:"🥊 Workout + Boxing",     done:false },
+  { id:4, name:"📖 Daily reading",        done:false },
+  { id:5, name:"💬 Human interaction",    done:false },
+  { id:6, name:"💰 Income/content action",done:false },
+  { id:7, name:"🌙 Night affirmations",   done:false }
+];
+
+let state = {
+  exp: 0,
+  streak: 0,
+  trialDone: false,
+  calendar: {}, // day: { status: 'clean'|'slip', expDelta: number, prevStreak: number }
+  quests: JSON.parse(JSON.stringify(DEFAULT_QUESTS)),
+  customQuests: [],
+  history: [],
+  graphHistory: [{ day:'Start', exp:0, pmo:0 }]
+};
+
+let lastQuickSlipBackup = null;
+let quickUndoTimer = null;
+
+function saveState() {
+  localStorage.setItem('hunterHubState_v5', JSON.stringify(state));
+  render();
+}
+
+function loadState() {
+  const saved = localStorage.getItem('hunterHubState_v5');
+  if (saved) {
+    try { state = Object.assign(state, JSON.parse(saved)); } catch(e){}
+  }
+  render();
+}
+
+function getDailyCleanExp(streakDays) {
+  const tier = Math.min(Math.floor(streakDays / 5) + 1, 5);
+  return tier * 100;
+}
+
+function getCurrentRank(exp) {
+  for (let i = 0; i < RANKS.length; i++) {
+    if (exp >= RANKS[i].exp) return RANKS[i];
+  }
+  return RANKS[RANKS.length - 1];
+}
+
+function getNextRank(exp) {
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (RANKS[i].exp > exp) return RANKS[i];
+  }
+  return null;
+}
+
+let selectedDay = null;
+function openDayModal(d) {
+  selectedDay = d;
+  document.getElementById('modalDayTitle').innerText = "November " + d + ", 2026";
+  const record = state.calendar[d];
+  const rate = getDailyCleanExp(state.streak);
+  let sub = "Current Rate: +" + rate + " EXP / clean day";
+  if (record) {
+    sub = `Status: ${record.status.toUpperCase()} (${record.expDelta >= 0 ? '+' : ''}${record.expDelta} EXP)`;
+  }
+  document.getElementById('modalDaySub').innerText = sub;
+  document.getElementById('calModal').classList.add('open');
+}
+
+function applyCalStatus(type) {
+  if (!selectedDay) return;
+  const prev = state.calendar[selectedDay];
+
+  if (type === 'clear') {
+    if (prev) {
+      if (prev.status === 'clean') {
+        state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
+        state.streak = Math.max(0, state.streak - 1);
+      } else if (prev.status === 'slip') {
+        // Refund exact slip penalty and restore streak
+        const refundedExp = Math.abs(prev.expDelta || 0);
+        state.exp += refundedExp;
+        state.streak = prev.prevStreak || 0;
+      }
+      delete state.calendar[selectedDay];
+      state.history = state.history.filter(h => h.day !== selectedDay);
+    }
+  } else if (type === 'clean') {
+    if (!prev || prev.status !== 'clean') {
+      if (prev && prev.status === 'slip') {
+        state.exp += Math.abs(prev.expDelta || 0);
+        state.streak = prev.prevStreak || 0;
+      }
+      const reward = getDailyCleanExp(state.streak);
+      state.streak += 1;
+      state.exp += reward;
+      state.calendar[selectedDay] = { status:'clean', expDelta: reward, prevStreak: state.streak - 1 };
+      state.history.unshift({ day:selectedDay, status:'Clean', exp:reward, date:new Date().toLocaleDateString() });
+    }
+  } else if (type === 'slip') {
+    if (prev && prev.status === 'clean') {
+      state.exp = Math.max(0, state.exp - (prev.expDelta || 0));
+      state.streak = Math.max(0, state.streak - 1);
+    }
+    const penalty = (state.streak < 5) ? 1100 : 200;
+    const oldStreak = state.streak;
+    state.exp = Math.max(0, state.exp - penalty);
+    state.streak = 0;
+    state.calendar[selectedDay] = { status:'slip', expDelta: -penalty, prevStreak: oldStreak };
+    state.history.unshift({ day:selectedDay, status:'Relapse Slip', exp:-penalty, date:new Date().toLocaleDateString() });
+  }
+
+  updateGraph();
+  closeModal('calModal');
+  saveState();
+}
+
+function openSlipModal() {
+  const penalty = (state.streak < 5) ? 1100 : 200;
+  document.getElementById('slipPenaltyExplanation').innerText = 
+    `Current Streak: ${state.streak} days.\n` +
+    (state.streak < 5 
+      ? `Streak is under 5 days. Confirming will deduct -1,100 EXP and reset your streak to 0.` 
+      : `Streak is 5+ days. Confirming will deduct -200 EXP and reset your streak to 0.`);
+  document.getElementById('slipModal').classList.add('open');
+}
+
+function executeSlip() {
+  const penalty = (state.streak < 5) ? 1100 : 200;
+  lastQuickSlipBackup = {
+    exp: state.exp,
+    streak: state.streak,
+    penalty: penalty
+  };
+  state.exp = Math.max(0, state.exp - penalty);
+  state.streak = 0;
+  state.history.unshift({ day:'Quick Slip', status:'Relapse Slip', exp:-penalty, date:new Date().toLocaleDateString() });
+
+  // Expose undo button for 10 seconds
+  const undoBtn = document.getElementById('quickUndoBtn');
+  undoBtn.style.display = 'flex';
+  clearTimeout(quickUndoTimer);
+  quickUndoTimer = setTimeout(() => {
+    undoBtn.style.display = 'none';
+    lastQuickSlipBackup = null;
+  }, 10000);
+
+  updateGraph();
+  closeModal('slipModal');
+  saveState();
+}
+
+function undoQuickSlip() {
+  if (!lastQuickSlipBackup) return;
+  state.exp = lastQuickSlipBackup.exp;
+  state.streak = lastQuickSlipBackup.streak;
+  state.history = state.history.filter(h => h.day !== 'Quick Slip');
+  lastQuickSlipBackup = null;
+  document.getElementById('quickUndoBtn').style.display = 'none';
+  updateGraph();
+  saveState();
+}
+
+function toggleTrial() {
+  state.trialDone = !state.trialDone;
+  state.exp = state.trialDone ? state.exp + 250 : Math.max(0, state.exp - 250);
+  updateGraph();
+  saveState();
+}
+
+function toggleQuest(id) {
+  const q = state.quests.find(item => item.id === id);
+  if (!q) return;
+  q.done = !q.done;
+  state.exp = q.done ? state.exp + 100 : Math.max(0, state.exp - 100);
+  updateGraph();
+  saveState();
+}
+
+function addCustomQuest() {
+  const inp = document.getElementById('customQuestInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  state.customQuests.push({ id: Date.now(), name: txt, done: false });
+  inp.value = '';
+  saveState();
+}
+
+function toggleCustomQuest(id) {
+  const q = state.customQuests.find(item => item.id === id);
+  if (!q) return;
+  q.done = !q.done;
+  state.exp = q.done ? state.exp + 50 : Math.max(0, state.exp - 50);
+  updateGraph();
+  saveState();
+}
+
+function deleteCustomQuest(id) {
+  const idx = state.customQuests.findIndex(item => item.id === id);
+  if (idx === -1) return;
+  if (state.customQuests[idx].done) {
+    state.exp = Math.max(0, state.exp - 50);
+  }
+  state.customQuests.splice(idx, 1);
+  updateGraph();
+  saveState();
+}
+
+function updateGraph() {
+  state.graphHistory.push({
+    day: 'D' + (state.graphHistory.length),
+    exp: state.exp,
+    pmo: state.streak
+  });
+  if (state.graphHistory.length > 8) state.graphHistory.shift();
+}
+
+function render() {
+  const curRank = getCurrentRank(state.exp);
+  const nextRank = getNextRank(state.exp);
+
+  document.getElementById('currentRankTitle').innerText = `${curRank.r} · ${curRank.name}`;
+  document.getElementById('streakText').innerText = `${state.streak} Days Streak`;
+  
+  const curDailyExp = getDailyCleanExp(state.streak);
+  const curTier = Math.min(Math.floor(state.streak / 5) + 1, 5);
+  document.getElementById('tierMultiplierText').innerText = `⚡ Tier ${curTier}: +${curDailyExp} EXP / Day ${curTier === 5 ? '(MAX)' : ''}`;
+
+  document.getElementById('expText').innerText = `${state.exp.toLocaleString()} EXP`;
+  if (nextRank) {
+    const prevCap = curRank.exp;
+    const nextCap = nextRank.exp;
+    const progress = Math.min(100, Math.max(0, ((state.exp - prevCap) / (nextCap - prevCap)) * 100));
+    document.getElementById('expProgressBar').style.width = progress + '%';
+    document.getElementById('nextRankText').innerText = `Next: ${nextRank.exp.toLocaleString()} EXP (${nextRank.r})`;
+  } else {
+    document.getElementById('expProgressBar').style.width = '100%';
+    document.getElementById('nextRankText').innerText = `MAX RANK ACHIEVED`;
+  }
+
+  // Calendar
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 30; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    const rec = state.calendar[i];
+    let icon = '·';
+    if (rec) {
+      if (rec.status === 'clean') {
+        cell.classList.add('is-clean');
+        icon = '✓';
+      } else if (rec.status === 'slip') {
+        cell.classList.add('is-slip');
+        icon = '✕';
+      }
+    }
+    cell.innerHTML = `<span class="cal-num">${i}</span><span class="cal-status">${icon}</span>`;
+    cell.onclick = () => openDayModal(i);
+    grid.appendChild(cell);
+  }
+
+  // Ranks
+  const ranksWrap = document.getElementById('ranksList');
+  ranksWrap.innerHTML = '';
+  RANKS.forEach(r => {
+    const isActive = (r.r === curRank.r);
+    const item = document.createElement('div');
+    item.className = 'rank-item' + (isActive ? ' is-active' : '');
+    item.innerHTML = `
+      <div>
+        <div class="rank-name">${r.r} <span style="font-weight:500; font-size:12px; color:var(--text-muted);">${r.name}</span></div>
       </div>
-      <div class="flex items-center gap-2">
-        <!-- Emergency Boss Fight Button -->
-        <button onclick="openBossFight()" class="px-2.5 py-1 rounded-lg bg-red-950/40 border border-red-500/40 text-red-400 text-xs font-bold font-mono hover:bg-red-900/60 transition flex items-center gap-1 active:scale-95">
-          <span>⚔️</span> Urge
-        </button>
-        <!-- Relapse / Log Slip Button -->
-        <button onclick="openRelapseModal()" class="px-2.5 py-1 rounded-lg bg-yellow-950/30 border border-yellow-500/30 text-yellow-400 text-xs font-bold font-mono hover:bg-yellow-900/40 transition active:scale-95">
-          <span>⚠️</span> Slip
-        </button>
+      <div>
+        ${isActive ? '<span class="badge-active">ACTIVE</span>' : `<span class="rank-exp">${r.exp.toLocaleString()} EXP</span>`}
       </div>
-    </header>
+    `;
+    ranksWrap.appendChild(item);
+  });
 
-    <!-- Rank & Streak Hero Card -->
-    <section class="rounded-2xl p-4 sm:p-5 bg-[#130f24] border border-[#261e44] relative overflow-hidden shadow-lg">
-      <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-purple-600/10 blur-2xl pointer-events-none"></div>
+  // Daily Hunter Trial
+  const trialBtn = document.getElementById('trialBtn');
+  if (state.trialDone) {
+    trialBtn.innerText = '✓ COMPLETED (+250 EXP)';
+    trialBtn.style.background = 'rgba(157,78,221,0.2)';
+    trialBtn.style.border = '1px solid var(--neon-purple)';
+  } else {
+    trialBtn.innerText = 'CLAIM +250 EXP';
+    trialBtn.style.background = 'var(--neon-purple-btn)';
+    trialBtn.style.border = 'none';
+  }
 
-      <!-- Rank Title -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span id="rankBadgeText" class="text-sm font-extrabold text-[#c77dff] font-mono tracking-wider">E · IRON HUNTER</span>
-        </div>
-        <span id="levelIndicator" class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300">SYSTEM V2.0</span>
-      </div>
-
-      <!-- Current Streak Display -->
-      <div class="mt-2 mb-3">
-        <div class="flex items-baseline gap-2">
-          <span id="streakCountText" class="text-3xl sm:text-4xl font-black text-white tracking-tight">0 Days Streak</span>
-        </div>
-      </div>
-
-      <!-- Progress Stats -->
-      <div class="flex items-center justify-between text-xs font-mono text-[#8b81a8] mb-1.5">
-        <span id="currentExpText" class="text-purple-300 font-bold">0 EXP</span>
-        <span id="nextRankText" class="text-gray-400">Next: 2,000 EXP (D)</span>
-      </div>
-
-      <!-- Glowing Progress Bar -->
-      <div class="w-full h-3 rounded-full bg-[#1b1535] p-0.5 border border-[#2b214d] overflow-hidden">
-        <div id="expProgressBar" class="h-full rounded-full bg-gradient-to-r from-[#9d4edd] to-[#c77dff] transition-all duration-500 ease-out glow-p" style="width: 0%;"></div>
-      </div>
-    </section>
-
-    <!-- Growth Graph (Interactive Canvas) -->
-    <section class="rounded-2xl p-4 bg-[#130f24] border border-[#261e44] relative shadow-lg">
-      <div class="flex items-center justify-between mb-2">
-        <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#8b81a8] font-mono">GROWTH GRAPH (EXP & STREAK)</div>
-        <div class="flex items-center gap-3 text-[10px] font-mono font-bold">
-          <span class="flex items-center gap-1 text-[#c77dff]">
-            <span class="inline-block w-2 h-2 rounded-full bg-[#c77dff]"></span> EXP
-          </span>
-          <span class="flex items-center gap-1 text-[#10b981]">
-            <span class="inline-block w-2 h-2 rounded-full bg-[#10b981]"></span> PMO
-          </span>
-        </div>
-      </div>
-
-      <!-- Canvas Container -->
-      <div class="w-full h-40 bg-[#0c0918] rounded-xl border border-[#211a3b] p-2 relative">
-        <canvas id="growthCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-      </div>
-      <div class="flex justify-between items-center text-[9px] font-mono text-[#6d638c] mt-2 px-1">
-        <span>7 DAYS AGO</span>
-        <span id="graphPeakNotice" class="text-purple-400/80">LIVE CALIBRATION</span>
-        <span>TODAY</span>
-      </div>
-    </section>
-
-    <!-- Combat Calendar -->
-    <section class="rounded-2xl p-4 bg-[#130f24] border border-[#261e44] relative shadow-lg">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#8b81a8] font-mono">COMBAT CALENDAR</div>
-        <div id="calendarMonthHeader" class="text-xs font-mono font-bold text-[#c77dff]">Nov 2026</div>
-      </div>
-
-      <!-- 7-column Calendar Grid -->
-      <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-center">
-        <!-- Rendered via JS -->
-      </div>
-
-      <!-- Legend -->
-      <div class="flex items-center justify-end gap-3 mt-3 text-[9px] font-mono text-[#766b96]">
-        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-purple-600"></span> Clean</div>
-        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-red-600"></span> Slip</div>
-        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#1c1638] border border-[#2f2553]"></span> Untracked</div>
-      </div>
-    </section>
-
-    <!-- Hunter Ranks Table -->
-    <section class="rounded-2xl p-3 sm:p-4 bg-[#130f24] border border-[#261e44] shadow-lg">
-      <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#8b81a8] font-mono mb-2.5 px-1">HUNTER RANKS</div>
-      <div id="ranksContainer" class="flex flex-col gap-1.5">
-        <!-- Dynamically Populated Ranks -->
-      </div>
-    </section>
-
-    <!-- Daily Hunter Trial (+250 EXP) -->
-    <section id="dailyTrialCard" class="rounded-2xl p-4 bg-[#130f24] border border-purple-500/30 relative overflow-hidden shadow-lg transition-all duration-300">
-      <div class="flex items-center justify-between mb-1.5">
-        <div class="flex items-center gap-1.5 text-xs font-extrabold text-[#c77dff] font-mono">
-          <span>⚔️</span>
-          <span>DAILY HUNTER TRIAL</span>
-        </div>
-        <span class="text-xs font-mono font-extrabold text-[#c77dff] bg-purple-950/60 px-2 py-0.5 rounded border border-purple-500/40">+250 EXP</span>
-      </div>
-
-      <p id="trialChallengeDescription" class="text-sm font-bold text-white mb-3">Shadowbox 3 Non-Stop High-Intensity Rounds</p>
-
-      <button id="claimTrialBtn" onclick="toggleDailyTrial()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#8b31ea] to-[#a855f7] hover:from-[#9d4edd] hover:to-[#c084fc] text-white font-extrabold text-xs tracking-wider uppercase font-mono shadow-md glow-p active:scale-[0.98] transition flex items-center justify-center gap-2">
-        <span id="trialBtnText">CLAIM +250 EXP</span>
+  // Daily Quests
+  const qWrap = document.getElementById('dailyQuestsList');
+  qWrap.innerHTML = '';
+  state.quests.forEach(q => {
+    const row = document.createElement('div');
+    row.className = 'quest-row';
+    row.innerHTML = `
+      <div class="quest-left">${q.name}</div>
+      <button class="quest-btn ${q.done ? 'is-done' : ''}" onclick="toggleQuest(${q.id})">
+        ${q.done ? '✓ DONE' : '+100 EXP'}
       </button>
-    </section>
+    `;
+    qWrap.appendChild(row);
+  });
 
-    <!-- Daily Quests (+100 EXP) -->
-    <section class="flex flex-col gap-2">
-      <div class="flex items-center justify-between px-1">
-        <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#8b81a8] font-mono">DAILY QUESTS (+100 EXP)</div>
-        <span id="questsCompletedCounter" class="text-[10px] font-mono text-[#c77dff]">0 / 7 DONE</span>
-      </div>
-
-      <div id="questsContainer" class="flex flex-col gap-2">
-        <!-- Quests items will be populated here -->
-      </div>
-    </section>
-
-    <!-- Custom Quests (+50 EXP) -->
-    <section class="flex flex-col gap-2.5">
-      <div class="flex items-center justify-between px-1">
-        <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#8b81a8] font-mono">CUSTOM QUESTS (+50 EXP)</div>
-        <span id="customQuestsCounter" class="text-[10px] font-mono text-[#c77dff]">0 / 0 DONE</span>
-      </div>
-
-      <!-- Add Custom Quest Input Bar -->
-      <div class="flex items-center gap-2 p-1.5 rounded-xl bg-[#130f24] border border-[#261e44] focus-within:border-purple-500/50 transition">
-        <input 
-          id="customQuestInput" 
-          type="text" 
-          placeholder="New hunter mission (e.g. 100 Pushups)..." 
-          class="flex-1 bg-transparent px-3 py-1.5 text-xs text-white placeholder-[#5a5078] outline-none font-medium"
-          onkeydown="if(event.key==='Enter') addCustomQuest()"
-        />
-        <button 
-          onclick="addCustomQuest()" 
-          class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#8b31ea] to-[#a855f7] hover:from-[#9d4edd] hover:to-[#c084fc] text-white text-xs font-mono font-bold uppercase transition glow-p active:scale-95"
-        >
-          + ADD
+  // Custom Quests
+  const cqWrap = document.getElementById('customQuestsList');
+  cqWrap.innerHTML = '';
+  state.customQuests.forEach(cq => {
+    const row = document.createElement('div');
+    row.className = 'quest-row';
+    row.innerHTML = `
+      <div class="quest-left" style="${cq.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${cq.name}</div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <button class="quest-btn ${cq.done ? 'is-done' : ''}" onclick="toggleCustomQuest(${cq.id})">
+          ${cq.done ? '✓ DONE' : '+50 EXP'}
         </button>
+        <button onclick="deleteCustomQuest(${cq.id})" style="background:none; border:none; color:var(--text-dim); font-size:14px; cursor:pointer; padding:4px;">✕</button>
       </div>
+    `;
+    cqWrap.appendChild(row);
+  });
 
-      <!-- Custom Quests List -->
-      <div id="customQuestsContainer" class="flex flex-col gap-2">
-        <!-- Dynamically rendered custom quests -->
-      </div>
-    </section>
-
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast-popup">
-    <span id="toastIcon">✨</span>
-    <span id="toastMsg" class="text-xs font-mono font-bold text-white tracking-wide">EXP GAINED!</span>
-  </div>
-
-  <!-- Urge Boss Fight Modal -->
-  <div id="bossFightModal" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-2xl bg-[#140e29] border border-red-500/50 p-5 shadow-2xl relative">
-      <div class="flex justify-between items-center mb-3">
-        <div class="flex items-center gap-2 text-red-400 font-mono font-black text-sm">
-          <span>⚔️</span>
-          <span>URGE BOSS FIGHT</span>
+  // History Log
+  const histBox = document.getElementById('historyEntries');
+  if (state.history.length === 0) {
+    histBox.innerHTML = 'No combat cycles recorded yet.';
+  } else {
+    histBox.innerHTML = state.history.map(h => `
+      <div style="border-bottom:1px solid var(--border); padding:8px 0;">
+        <div style="display:flex; justify-content:space-between; font-weight:700;">
+          <span style="color:var(--text-white);">${typeof h.day === 'number' ? 'Nov ' + h.day : h.day}</span>
+          <span style="color:${h.exp >= 0 ? 'var(--neon-purple)' : 'var(--accent-red)'};">${h.exp >= 0 ? '+' : ''}${h.exp} EXP</span>
         </div>
-        <button onclick="closeBossFight()" class="text-gray-400 hover:text-white p-1 font-mono text-sm">✕</button>
+        <div style="font-size:11px; color:var(--text-muted);">${h.status} · ${h.date || ''}</div>
       </div>
+    `).join('');
+  }
 
-      <div class="text-center my-4">
-        <div class="text-[11px] font-mono text-red-300 uppercase tracking-widest mb-1">DOPAMINE SURGE OVERRIDE</div>
-        <div id="bossTimer" class="text-5xl font-black font-mono text-white tracking-tight">03:00</div>
-        <div class="text-xs text-gray-400 mt-2 font-mono">Survive 180 seconds. Blood flows to muscles, not impulses.</div>
-      </div>
+  drawGraph();
+}
 
-      <div class="p-3 rounded-xl bg-[#1d143b] border border-purple-500/30 mb-4 text-xs text-gray-300 space-y-1.5 font-medium">
-        <div class="text-purple-300 font-bold font-mono">COMMAND PROTOCOL:</div>
-        <div>1. Drop down and perform 25 pushups or air squats right now.</div>
-        <div>2. Splash freezing cold water directly on your face.</div>
-        <div>3. Step away from your private room or phone screens.</div>
-      </div>
+function drawGraph() {
+  const canvas = document.getElementById('growthCanvas');
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  ctx.scale(2, 2);
 
-      <div class="flex gap-2">
-        <button id="bossDefeatedBtn" onclick="claimBossDefeat()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-mono font-bold text-xs shadow glow-p transition active:scale-95">
-          SURVIVED (+150 EXP)
-        </button>
-        <button onclick="closeBossFight()" class="px-4 py-2.5 rounded-xl bg-[#231a44] text-gray-400 hover:text-white font-mono text-xs font-semibold">
-          Exit
-        </button>
-      </div>
-    </div>
-  </div>
+  const w = rect.width;
+  const h = rect.height;
+  ctx.clearRect(0, 0, w, h);
 
-  <!-- Relapse Modal -->
-  <div id="relapseModal" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-2xl bg-[#140e29] border border-yellow-500/40 p-5 shadow-2xl relative">
-      <div class="flex justify-between items-center mb-3">
-        <div class="flex items-center gap-2 text-yellow-400 font-mono font-bold text-sm">
-          <span>⚠️</span>
-          <span>COMBAT LOG: RECORD SLIP</span>
-        </div>
-        <button onclick="closeRelapseModal()" class="text-gray-400 hover:text-white p-1 font-mono text-sm">✕</button>
-      </div>
+  const data = state.graphHistory;
+  if (data.length < 2) return;
 
-      <p class="text-xs text-gray-300 mb-3">
-        A true hunter acknowledges mistakes immediately. Logging a slip resets the current PMO streak and deducts <span class="text-red-400 font-bold font-mono">-500 EXP</span>.
-      </p>
+  const maxExp = Math.max(...data.map(d => d.exp), 500);
+  const maxPmo = Math.max(...data.map(d => d.pmo), 5);
 
-      <label class="block text-[10px] font-mono uppercase text-[#8b81a8] mb-1">Trigger Encountered</label>
-      <select id="relapseTriggerSelect" class="w-full p-2.5 rounded-xl bg-[#1b143a] border border-[#2f2359] text-xs font-medium text-white mb-4 outline-none focus:border-purple-500">
-        <option value="Late Night Phone Scrolling">Late Night Phone Scrolling</option>
-        <option value="Boredom & Aimless Browsing">Boredom & Aimless Browsing</option>
-        <option value="High Stress / Exhaustion">High Stress / Exhaustion</option>
-        <option value="Alone in Room with Door Closed">Alone in Room with Door Closed</option>
-        <option value="Lust Peeking / Social Media">Lust Peeking / Social Media</option>
-      </select>
+  ctx.beginPath();
+  data.forEach((pt, i) => {
+    const x = (i / (data.length - 1)) * (w - 20) + 10;
+    const y = h - 15 - (pt.exp / maxExp) * (h - 30);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#9d4edd';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
 
-      <div class="flex gap-2">
-        <button onclick="confirmRelapseAction()" class="flex-1 py-2.5 rounded-xl bg-red-600/80 hover:bg-red-600 text-white font-mono font-bold text-xs active:scale-95 transition">
-          Confirm Slip (-500 EXP)
-        </button>
-        <button onclick="closeRelapseModal()" class="px-4 py-2.5 rounded-xl bg-[#231a44] text-gray-400 hover:text-white font-mono text-xs">
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
+  data.forEach((pt, i) => {
+    const x = (i / (data.length - 1)) * (w - 20) + 10;
+    const y = h - 15 - (pt.exp / maxExp) * (h - 30);
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#b5179e';
+    ctx.fill();
+  });
 
-  <!-- Day Tile Editor Modal -->
-  <div id="dayEditModal" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-4">
-    <div class="w-full max-w-xs rounded-2xl bg-[#140e29] border border-purple-500/40 p-4 shadow-2xl relative">
-      <div class="text-xs font-mono font-bold text-purple-300 mb-1" id="editModalDayTitle">DAY STATUS</div>
-      <div class="text-[11px] text-gray-400 mb-3 font-mono">Toggle combat state for this date:</div>
-      <div class="flex flex-col gap-2">
-        <button onclick="setDayStatus('clean')" class="py-2 px-3 rounded-lg bg-purple-600/20 border border-purple-500/50 text-purple-300 text-xs font-mono font-bold hover:bg-purple-600/40 transition">
-          ✓ Mark Clean (+50 EXP)
-        </button>
-        <button onclick="setDayStatus('slip')" class="py-2 px-3 rounded-lg bg-red-600/20 border border-red-500/50 text-red-300 text-xs font-mono font-bold hover:bg-red-600/40 transition">
-          ✕ Mark Slip (-300 EXP)
-        </button>
-        <button onclick="setDayStatus('clear')" class="py-2 px-3 rounded-lg bg-[#20183e] text-gray-400 text-xs font-mono hover:text-white transition">
-          — Clear Entry
-        </button>
-        <button onclick="closeDayModal()" class="py-1 text-[11px] text-gray-500 hover:text-gray-300 font-mono">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
+  ctx.beginPath();
+  ctx.setLineDash([4, 4]);
+  data.forEach((pt, i) => {
+    const x = (i / (data.length - 1)) * (w - 20) + 10;
+    const y = h - 15 - (pt.pmo / maxPmo) * (h - 30);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#2ec4b6';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
 
-  <!-- Application Logic -->
-  <script>
-    // --- HUNTER RANKS CONFIG ---
-    const HUNTER_RANKS = [
-      { id: 'SSS', name: 'The Awakened One', exp: 500000 },
-      { id: 'SS', name: 'Absolute', exp: 250000 },
-      { id: 'S', name: 'S-Rank Hunter', exp: 120000 },
-      { id: 'A', name: 'Shadow Monarch', exp: 60000 },
-      { id: 'B', name: 'Gold Hunter', exp: 25000 },
-      { id: 'C', name: 'Silver Hunter', exp: 8000 },
-      { id: 'D', name: 'Bronze Hunter', exp: 2000 },
-      { id: 'E', name: 'Iron Hunter', exp: 0 }
-    ];
-
-    // --- DAILY QUESTS CONFIG ---
-    const DEFAULT_QUESTS = [
-      { id: 'q_morning_aff', title: 'Morning affirmations', icon: '🌅', exp: 100 },
-      { id: 'q_morning_med', title: 'Morning meditation', icon: '🧘', exp: 100 },
-      { id: 'q_workout_box', title: 'Workout + Boxing', icon: '🥊', exp: 100 },
-      { id: 'q_reading', title: 'Daily reading', icon: '📖', exp: 100 },
-      { id: 'q_interaction', title: 'Human interaction', icon: '💬', exp: 100 },
-      { id: 'q_income_action', title: 'Income/content action', icon: '💰', exp: 100 },
-      { id: 'q_night_aff', title: 'Night affirmations', icon: '🌙', exp: 100 }
-    ];
-
-    // --- STATE INITIALIZATION (FRESH ZERO DEFAULTS) ---
-    const DEFAULT_STATE = {
-      exp: 0,
-      streak: 0,
-      trialCompleted: false,
-      trialLastDate: '',
-      questsDone: {},
-      questsDate: '',
-      customQuests: [], // [{ id: 'cq_123', title: 'Task', done: false }]
-      history: [0, 0, 0, 0, 0, 0, 0], // past 7 days EXP snapshot
-      pmoHistory: [0, 0, 0, 0, 0, 0, 0], // past 7 days streak snapshot
-      calendarLog: {} // { "2026-11-01": "clean" | "slip" }
-    };
-
-    let state = loadState();
-    let selectedCalendarDay = null;
-    let urgeTimerInterval = null;
-    let urgeSecondsRemaining = 180;
-
-    // --- STORAGE HELPERS ---
-    function loadState() {
-      try {
-        const stored = localStorage.getItem('nikrises_hunter_hub_data');
-        if (stored) {
-          return JSON.parse(stored);
-        }
-      } catch (e) {
-        console.error('Storage reading failed:', e);
-      }
-      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+let urgeInterval = null;
+let urgeSeconds = 180;
+function openUrgeModal() {
+  urgeSeconds = 180;
+  document.getElementById('urgeTimer').innerText = '03:00';
+  document.getElementById('urgeClaimBtn').style.display = 'none';
+  document.getElementById('urgeModal').classList.add('open');
+  clearInterval(urgeInterval);
+  urgeInterval = setInterval(() => {
+    urgeSeconds--;
+    const m = String(Math.floor(urgeSeconds / 60)).padStart(2, '0');
+    const s = String(urgeSeconds % 60).padStart(2, '0');
+    document.getElementById('urgeTimer').innerText = `${m}:${s}`;
+    if (urgeSeconds <= 0) {
+      clearInterval(urgeInterval);
+      document.getElementById('urgeClaimBtn').style.display = 'block';
     }
-
-    function saveState() {
-      try {
-        localStorage.setItem('nikrises_hunter_hub_data', JSON.stringify(state));
-      } catch (e) {
-        console.error('Storage write error:', e);
-      }
-      updateUI();
-    }
-
-    function confirmSystemReset() {
-      const ok = window.confirm("Reset all Hunter Hub stats, EXP, streak, and calendar to 0?");
-      if (ok) {
-        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        saveState();
-        showToast("System initialized to Fresh 0 EXP!", "⚡");
-      }
-    }
-
-    // --- RANK LOGIC ---
-    function getCurrentRank(exp) {
-      for (let i = 0; i < HUNTER_RANKS.length; i++) {
-        if (exp >= HUNTER_RANKS[i].exp) {
-          const next = i > 0 ? HUNTER_RANKS[i - 1] : null;
-          return { current: HUNTER_RANKS[i], next: next };
-        }
-      }
-      return { current: HUNTER_RANKS[HUNTER_RANKS.length - 1], next: HUNTER_RANKS[HUNTER_RANKS.length - 2] };
-    }
-
-    // --- UI UPDATERS ---
-    function updateUI() {
-      const { current, next } = getCurrentRank(state.exp);
-
-      // Hero Elements
-      document.getElementById('rankBadgeText').innerText = `${current.id} · ${current.name.toUpperCase()}`;
-      document.getElementById('streakCountText').innerText = `${state.streak} ${state.streak === 1 ? 'Day' : 'Days'} Streak`;
-      document.getElementById('currentExpText').innerText = `${state.exp.toLocaleString()} EXP`;
-
-      if (next) {
-        document.getElementById('nextRankText').innerText = `Next: ${next.exp.toLocaleString()} EXP (${next.id})`;
-        const span = next.exp - current.exp;
-        const gained = state.exp - current.exp;
-        const pct = Math.min(100, Math.max(0, (gained / span) * 100));
-        document.getElementById('expProgressBar').style.width = `${pct}%`;
-      } else {
-        document.getElementById('nextRankText').innerText = `MAX RANK ACHIEVED`;
-        document.getElementById('expProgressBar').style.width = `100%`;
-      }
-
-      // Render Ranks List
-      renderRanks(current.id);
-
-      // Render Quests
-      renderQuests();
-
-      // Render Custom Quests
-      renderCustomQuests();
-
-      // Render Daily Trial Button State
-      renderTrial();
-
-      // Render Combat Calendar
-      renderCalendar();
-
-      // Redraw Growth Chart
-      drawGrowthChart();
-    }
-
-    // --- RANKS LIST RENDERING ---
-    function renderRanks(currentRankId) {
-      const container = document.getElementById('ranksContainer');
-      container.innerHTML = '';
-
-      HUNTER_RANKS.forEach(rank => {
-        const isActive = rank.id === currentRankId;
-        const row = document.createElement('div');
-        row.className = `flex items-center justify-between p-3 rounded-xl transition duration-200 border ${
-          isActive 
-            ? 'rank-active-card' 
-            : 'bg-[#181330] border-[#221b3f] hover:border-purple-500/20'
-        }`;
-
-        row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="font-mono font-black text-sm ${isActive ? 'text-[#c77dff]' : 'text-gray-300'}">${rank.id}</span>
-            <span class="text-xs font-semibold ${isActive ? 'text-white font-bold' : 'text-[#9c93b8]'}">${rank.name}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            ${
-              isActive 
-                ? '<span class="text-[10px] font-mono font-extrabold text-[#c77dff] tracking-wider px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/50">ACTIVE</span>'
-                : `<span class="text-[11px] font-mono text-[#6c618b]">${rank.exp.toLocaleString()} EXP</span>`
-            }
-          </div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    // --- DAILY QUESTS ---
-    function renderQuests() {
-      const container = document.getElementById('questsContainer');
-      container.innerHTML = '';
-      let doneCount = 0;
-
-      DEFAULT_QUESTS.forEach(quest => {
-        const isDone = !!state.questsDone[quest.id];
-        if (isDone) doneCount++;
-
-        const row = document.createElement('div');
-        row.className = `flex items-center justify-between p-3 rounded-xl transition-all duration-150 cursor-pointer border ${
-          isDone
-            ? 'bg-[#181233] border-purple-500/40 shadow-sm'
-            : 'bg-[#15102b] border-[#241c42] hover:border-purple-500/30'
-        }`;
-        row.onclick = () => toggleQuest(quest.id, quest.exp);
-
-        row.innerHTML = `
-          <div class="flex items-center gap-2.5">
-            <span class="text-base">${quest.icon}</span>
-            <span class="text-xs font-semibold ${isDone ? 'text-gray-200' : 'text-[#b8afce]'}">${quest.title}</span>
-          </div>
-          <div>
-            <span class="text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg transition ${
-              isDone
-                ? 'text-[#c77dff] bg-purple-500/20 border border-purple-500/40 glow-p'
-                : 'text-[#6c618b] bg-[#1a1435]'
-            }">
-              ${isDone ? '✓ DONE' : '+100 EXP'}
-            </span>
-          </div>
-        `;
-        container.appendChild(row);
-      });
-
-      document.getElementById('questsCompletedCounter').innerText = `${doneCount} / ${DEFAULT_QUESTS.length} DONE`;
-    }
-
-    function toggleQuest(questId, expReward) {
-      const currentState = !!state.questsDone[questId];
-      if (!currentState) {
-        state.questsDone[questId] = true;
-        addExp(expReward, "Quest Completed!");
-      } else {
-        delete state.questsDone[questId];
-        addExp(-expReward, "Quest Unchecked");
-      }
-      saveState();
-    }
-
-    // --- CUSTOM QUESTS LOGIC ---
-    function renderCustomQuests() {
-      const container = document.getElementById('customQuestsContainer');
-      const counter = document.getElementById('customQuestsCounter');
-      container.innerHTML = '';
-
-      if (!state.customQuests) {
-        state.customQuests = [];
-      }
-
-      const total = state.customQuests.length;
-      let completed = 0;
-
-      if (total === 0) {
-        container.innerHTML = `
-          <div class="py-3 px-4 rounded-xl bg-[#130f24]/50 border border-dashed border-[#221b3f] text-center text-xs font-mono text-[#5f557f]">
-            No custom quests active. Add one above!
-          </div>
-        `;
-        counter.innerText = '0 / 0 DONE';
-        return;
-      }
-
-      state.customQuests.forEach(quest => {
-        if (quest.done) completed++;
-
-        const row = document.createElement('div');
-        row.className = `flex items-center justify-between p-3 rounded-xl transition-all duration-150 border ${
-          quest.done
-            ? 'bg-[#181233] border-purple-500/40 shadow-sm'
-            : 'bg-[#15102b] border-[#241c42] hover:border-purple-500/30'
-        }`;
-
-        row.innerHTML = `
-          <div class="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
-            <span class="text-sm">⚡</span>
-            <span class="text-xs font-semibold truncate ${quest.done ? 'text-gray-300 line-through opacity-75' : 'text-white'}">${escapeHtml(quest.title)}</span>
-          </div>
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <button 
-              onclick="toggleCustomQuest('${quest.id}')"
-              class="text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg transition active:scale-95 ${
-                quest.done
-                  ? 'text-[#c77dff] bg-purple-500/20 border border-purple-500/40 glow-p'
-                  : 'text-[#8b81a8] bg-[#1a1435] border border-[#2a204d] hover:text-purple-300'
-              }"
-            >
-              ${quest.done ? '✓ DONE' : '+50 EXP'}
-            </button>
-            <button 
-              onclick="deleteCustomQuest('${quest.id}')"
-              class="p-1 text-gray-500 hover:text-red-400 transition text-sm font-mono"
-              title="Delete Quest"
-            >
-              ✕
-            </button>
-          </div>
-        `;
-        container.appendChild(row);
-      });
-
-      counter.innerText = `${completed} / ${total} DONE`;
-    }
-
-    function addCustomQuest() {
-      const input = document.getElementById('customQuestInput');
-      const text = input.value.trim();
-      if (!text) return;
-
-      if (!state.customQuests) state.customQuests = [];
-
-      const newQuest = {
-        id: 'cq_' + Date.now(),
-        title: text,
-        done: false
-      };
-
-      state.customQuests.unshift(newQuest);
-      input.value = '';
-      saveState();
-      showToast("Custom Quest Created", "⚔️");
-    }
-
-    function toggleCustomQuest(questId) {
-      if (!state.customQuests) return;
-      const quest = state.customQuests.find(q => q.id === questId);
-      if (!quest) return;
-
-      quest.done = !quest.done;
-      if (quest.done) {
-        addExp(50, `Completed "${quest.title}"`);
-      } else {
-        addExp(-50, `Uncompleted "${quest.title}"`);
-      }
-      saveState();
-    }
-
-    function deleteCustomQuest(questId) {
-      if (!state.customQuests) return;
-      const index = state.customQuests.findIndex(q => q.id === questId);
-      if (index === -1) return;
-
-      const [removed] = state.customQuests.splice(index, 1);
-      // Deduct EXP if the deleted quest had been marked done so stats remain accurate
-      if (removed.done) {
-        addExp(-50, `Removed "${removed.title}"`);
-      }
-      saveState();
-      showToast("Quest Removed", "🗑️");
-    }
-
-    function escapeHtml(text) {
-      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-      return text.replace(/[&<>"']/g, m => map[m]);
-    }
-
-    // --- DAILY TRIAL ---
-    function renderTrial() {
-      const btn = document.getElementById('claimTrialBtn');
-      const text = document.getElementById('trialBtnText');
-      const card = document.getElementById('dailyTrialCard');
-
-      if (state.trialCompleted) {
-        card.classList.add('border-green-500/50');
-        btn.className = "w-full py-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-300 font-mono font-bold text-xs uppercase cursor-default";
-        text.innerText = "✓ TRIAL COMPLETED TODAY";
-      } else {
-        card.classList.remove('border-green-500/50');
-        btn.className = "w-full py-2.5 rounded-xl bg-gradient-to-r from-[#8b31ea] to-[#a855f7] hover:from-[#9d4edd] hover:to-[#c084fc] text-white font-extrabold text-xs tracking-wider uppercase font-mono shadow-md glow-p active:scale-[0.98] transition flex items-center justify-center gap-2";
-        text.innerText = "CLAIM +250 EXP";
-      }
-    }
-
-    function toggleDailyTrial() {
-      if (state.trialCompleted) {
-        state.trialCompleted = false;
-        addExp(-250, "Trial Reopened");
-      } else {
-        state.trialCompleted = true;
-        addExp(250, "Daily Hunter Trial Cleared!");
-      }
-      saveState();
-    }
-
-    // --- EXP DISCIPLINE LOGIC ---
-    function addExp(amount, message) {
-      const oldExp = state.exp;
-      state.exp = Math.max(0, state.exp + amount);
-
-      // Record in history for growth graph fluctuation
-      state.history[state.history.length - 1] = state.exp;
-
-      if (amount > 0) {
-        showToast(`+${amount} EXP — ${message}`, "⚡");
-      } else if (amount < 0) {
-        showToast(`${amount} EXP — ${message}`, "⚠️");
-      }
-
-      // Check for level up notification
-      const oldRank = getCurrentRank(oldExp).current;
-      const newRank = getCurrentRank(state.exp).current;
-      if (newRank.exp > oldRank.exp) {
-        showToast(`RANK UP! You are now ${newRank.id} Hunter!`, "👑");
-      }
-    }
-
-    // --- COMBAT CALENDAR LOGIC ---
-    function renderCalendar() {
-      const grid = document.getElementById('calendarGrid');
-      grid.innerHTML = '';
-
-      // Default month: November 2026 (or dynamically current)
-      const now = new Date(2026, 10, 1); // Nov 2026 as shown in screenshot
-      const daysInMonth = 30;
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayStr = `2026-11-${String(day).padStart(2, '0')}`;
-        const status = state.calendarLog[dayStr]; // 'clean' | 'slip' | undefined
-
-        const cell = document.createElement('div');
-        cell.className = `p-2 rounded-xl flex flex-col items-center justify-center cursor-pointer transition border aspect-square ${
-          status === 'clean'
-            ? 'bg-purple-950/40 border-purple-500/60 text-[#c77dff] glow-p'
-            : status === 'slip'
-            ? 'bg-red-950/40 border-red-500/60 text-red-400'
-            : 'bg-[#181330] border-[#221b3f] hover:border-purple-500/30 text-gray-400'
-        }`;
-        cell.onclick = () => openDayModal(dayStr, day, status);
-
-        const label = status === 'clean' ? '✓' : status === 'slip' ? '✕' : '-';
-        cell.innerHTML = `
-          <span class="text-xs font-mono font-bold">${day}</span>
-          <span class="text-[10px] font-mono mt-0.5 ${status === 'clean' ? 'text-purple-300 font-black' : status === 'slip' ? 'text-red-400 font-black' : 'text-gray-600'}">${label}</span>
-        `;
-        grid.appendChild(cell);
-      }
-    }
-
-    function openDayModal(dayStr, dayNum, currentStatus) {
-      selectedCalendarDay = dayStr;
-      document.getElementById('editModalDayTitle').innerText = `NOV ${dayNum}, 2026 STATUS`;
-      const modal = document.getElementById('dayEditModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeDayModal() {
-      const modal = document.getElementById('dayEditModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      selectedCalendarDay = null;
-    }
-
-    function setDayStatus(type) {
-      if (!selectedCalendarDay) return;
-      if (type === 'clean') {
-        state.calendarLog[selectedCalendarDay] = 'clean';
-        state.streak += 1;
-        state.pmoHistory[state.pmoHistory.length - 1] = state.streak;
-        addExp(50, "Clean Day Logged");
-      } else if (type === 'slip') {
-        state.calendarLog[selectedCalendarDay] = 'slip';
-        state.streak = 0;
-        state.pmoHistory[state.pmoHistory.length - 1] = 0;
-        addExp(-300, "Slip Logged");
-      } else {
-        delete state.calendarLog[selectedCalendarDay];
-      }
-      closeDayModal();
-      saveState();
-    }
-
-    // --- GROWTH GRAPH (CANVAS) ---
-    function drawGrowthChart() {
-      const canvas = document.getElementById('growthCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-
-      const w = rect.width;
-      const h = rect.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      // Light background grid lines
-      ctx.strokeStyle = '#1b1535';
-      ctx.lineWidth = 1;
-      for (let y = 15; y < h; y += 28) {
-        ctx.beginPath();
-        ctx.moveTo(10, y);
-        ctx.lineTo(w - 10, y);
-        ctx.stroke();
-      }
-
-      // Graph data points
-      const expData = state.history;
-      const pmoData = state.pmoHistory;
-      const count = expData.length;
-
-      // Determine scales
-      const maxExp = Math.max(...expData, 500);
-      const maxStreak = Math.max(...pmoData, 5);
-
-      // Helper function to map data to canvas Y
-      const getExpY = (val) => h - 20 - (val / maxExp) * (h - 45);
-      const getPmoY = (val) => h - 18 - (val / maxStreak) * (h - 50);
-      const getX = (index) => 15 + (index / (count - 1)) * (w - 30);
-
-      // 1. Draw PMO Curve (Dotted Green/Cyan)
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      for (let i = 0; i < count; i++) {
-        const x = getX(i);
-        const y = getPmoY(pmoData[i]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      // PMO Endpoint Dot
-      ctx.setLineDash([]);
-      const lastPmoX = getX(count - 1);
-      const lastPmoY = getPmoY(pmoData[count - 1]);
-      ctx.fillStyle = '#10b981';
-      ctx.beginPath();
-      ctx.arc(lastPmoX, lastPmoY, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 2. Draw EXP Line (Vibrant Neon Purple with subtle gradient fill)
-      ctx.strokeStyle = '#c77dff';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      for (let i = 0; i < count; i++) {
-        const x = getX(i);
-        const y = getExpY(expData[i]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      // EXP Dots
-      for (let i = 0; i < count; i++) {
-        const x = getX(i);
-        const y = getExpY(expData[i]);
-        ctx.fillStyle = '#c77dff';
-        ctx.beginPath();
-        ctx.arc(x, y, i === count - 1 ? 5 : 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#0c0918';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-    }
-
-    // --- URGE BOSS FIGHT PROTOCOL ---
-    function openBossFight() {
-      const modal = document.getElementById('bossFightModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-
-      urgeSecondsRemaining = 180;
-      updateUrgeTimerText();
-      clearInterval(urgeTimerInterval);
-      urgeTimerInterval = setInterval(() => {
-        if (urgeSecondsRemaining > 0) {
-          urgeSecondsRemaining--;
-          updateUrgeTimerText();
-        } else {
-          clearInterval(urgeTimerInterval);
-        }
-      }, 1000);
-    }
-
-    function updateUrgeTimerText() {
-      const mins = Math.floor(urgeSecondsRemaining / 60);
-      const secs = urgeSecondsRemaining % 60;
-      document.getElementById('bossTimer').innerText = 
-        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    function claimBossDefeat() {
-      clearInterval(urgeTimerInterval);
-      closeBossFight();
-      addExp(150, "Urge Boss Neutralized!");
-      saveState();
-    }
-
-    function closeBossFight() {
-      clearInterval(urgeTimerInterval);
-      const modal = document.getElementById('bossFightModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    // --- RELAPSE / SLIP MODAL ---
-    function openRelapseModal() {
-      const modal = document.getElementById('relapseModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeRelapseModal() {
-      const modal = document.getElementById('relapseModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function confirmRelapseAction() {
-      const trigger = document.getElementById('relapseTriggerSelect').value;
-      state.streak = 0;
-      state.pmoHistory[state.pmoHistory.length - 1] = 0;
-      
-      // Penalty
-      addExp(-500, `Relapse recorded (${trigger})`);
-      closeRelapseModal();
-      saveState();
-    }
-
-    // --- TOAST DISPLAY ---
-    function showToast(msg, icon = "⚡") {
-      const toast = document.getElementById('toast');
-      document.getElementById('toastMsg').innerText = msg;
-      document.getElementById('toastIcon').innerText = icon;
-      toast.classList.add('active');
-      setTimeout(() => {
-        toast.classList.remove('active');
-      }, 2600);
-    }
-
-    // --- WINDOW RESIZE & INIT ---
-    window.addEventListener('resize', drawGrowthChart);
-
-    window.onload = function () {
-      updateUI();
-    };
-  </script>
+  }, 1000);
+}
+
+function claimUrgeVictory() {
+  state.exp += 150;
+  updateGraph();
+  closeUrgeModal();
+  saveState();
+}
+
+function closeUrgeModal() {
+  clearInterval(urgeInterval);
+  closeModal('urgeModal');
+}
+
+function openHistoryModal() { document.getElementById('historyModal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+window.addEventListener('resize', drawGraph);
+window.onload = loadState;
+</script>
 </body>
 </html>
