@@ -261,6 +261,36 @@
       </div>
     </section>
 
+    <!-- Custom Quests (+50 EXP) -->
+    <section class="flex flex-col gap-2.5">
+      <div class="flex items-center justify-between px-1">
+        <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#8b81a8] font-mono">CUSTOM QUESTS (+50 EXP)</div>
+        <span id="customQuestsCounter" class="text-[10px] font-mono text-[#c77dff]">0 / 0 DONE</span>
+      </div>
+
+      <!-- Add Custom Quest Input Bar -->
+      <div class="flex items-center gap-2 p-1.5 rounded-xl bg-[#130f24] border border-[#261e44] focus-within:border-purple-500/50 transition">
+        <input 
+          id="customQuestInput" 
+          type="text" 
+          placeholder="New hunter mission (e.g. 100 Pushups)..." 
+          class="flex-1 bg-transparent px-3 py-1.5 text-xs text-white placeholder-[#5a5078] outline-none font-medium"
+          onkeydown="if(event.key==='Enter') addCustomQuest()"
+        />
+        <button 
+          onclick="addCustomQuest()" 
+          class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#8b31ea] to-[#a855f7] hover:from-[#9d4edd] hover:to-[#c084fc] text-white text-xs font-mono font-bold uppercase transition glow-p active:scale-95"
+        >
+          + ADD
+        </button>
+      </div>
+
+      <!-- Custom Quests List -->
+      <div id="customQuestsContainer" class="flex flex-col gap-2">
+        <!-- Dynamically rendered custom quests -->
+      </div>
+    </section>
+
   </div>
 
   <!-- Toast Notification -->
@@ -394,6 +424,7 @@
       trialLastDate: '',
       questsDone: {},
       questsDate: '',
+      customQuests: [], // [{ id: 'cq_123', title: 'Task', done: false }]
       history: [0, 0, 0, 0, 0, 0, 0], // past 7 days EXP snapshot
       pmoHistory: [0, 0, 0, 0, 0, 0, 0], // past 7 days streak snapshot
       calendarLog: {} // { "2026-11-01": "clean" | "slip" }
@@ -471,6 +502,9 @@
 
       // Render Quests
       renderQuests();
+
+      // Render Custom Quests
+      renderCustomQuests();
 
       // Render Daily Trial Button State
       renderTrial();
@@ -562,6 +596,122 @@
         addExp(-expReward, "Quest Unchecked");
       }
       saveState();
+    }
+
+    // --- CUSTOM QUESTS LOGIC ---
+    function renderCustomQuests() {
+      const container = document.getElementById('customQuestsContainer');
+      const counter = document.getElementById('customQuestsCounter');
+      container.innerHTML = '';
+
+      if (!state.customQuests) {
+        state.customQuests = [];
+      }
+
+      const total = state.customQuests.length;
+      let completed = 0;
+
+      if (total === 0) {
+        container.innerHTML = `
+          <div class="py-3 px-4 rounded-xl bg-[#130f24]/50 border border-dashed border-[#221b3f] text-center text-xs font-mono text-[#5f557f]">
+            No custom quests active. Add one above!
+          </div>
+        `;
+        counter.innerText = '0 / 0 DONE';
+        return;
+      }
+
+      state.customQuests.forEach(quest => {
+        if (quest.done) completed++;
+
+        const row = document.createElement('div');
+        row.className = `flex items-center justify-between p-3 rounded-xl transition-all duration-150 border ${
+          quest.done
+            ? 'bg-[#181233] border-purple-500/40 shadow-sm'
+            : 'bg-[#15102b] border-[#241c42] hover:border-purple-500/30'
+        }`;
+
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+            <span class="text-sm">⚡</span>
+            <span class="text-xs font-semibold truncate ${quest.done ? 'text-gray-300 line-through opacity-75' : 'text-white'}">${escapeHtml(quest.title)}</span>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button 
+              onclick="toggleCustomQuest('${quest.id}')"
+              class="text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg transition active:scale-95 ${
+                quest.done
+                  ? 'text-[#c77dff] bg-purple-500/20 border border-purple-500/40 glow-p'
+                  : 'text-[#8b81a8] bg-[#1a1435] border border-[#2a204d] hover:text-purple-300'
+              }"
+            >
+              ${quest.done ? '✓ DONE' : '+50 EXP'}
+            </button>
+            <button 
+              onclick="deleteCustomQuest('${quest.id}')"
+              class="p-1 text-gray-500 hover:text-red-400 transition text-sm font-mono"
+              title="Delete Quest"
+            >
+              ✕
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      counter.innerText = `${completed} / ${total} DONE`;
+    }
+
+    function addCustomQuest() {
+      const input = document.getElementById('customQuestInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (!state.customQuests) state.customQuests = [];
+
+      const newQuest = {
+        id: 'cq_' + Date.now(),
+        title: text,
+        done: false
+      };
+
+      state.customQuests.unshift(newQuest);
+      input.value = '';
+      saveState();
+      showToast("Custom Quest Created", "⚔️");
+    }
+
+    function toggleCustomQuest(questId) {
+      if (!state.customQuests) return;
+      const quest = state.customQuests.find(q => q.id === questId);
+      if (!quest) return;
+
+      quest.done = !quest.done;
+      if (quest.done) {
+        addExp(50, `Completed "${quest.title}"`);
+      } else {
+        addExp(-50, `Uncompleted "${quest.title}"`);
+      }
+      saveState();
+    }
+
+    function deleteCustomQuest(questId) {
+      if (!state.customQuests) return;
+      const index = state.customQuests.findIndex(q => q.id === questId);
+      if (index === -1) return;
+
+      const [removed] = state.customQuests.splice(index, 1);
+      // Deduct EXP if the deleted quest had been marked done so stats remain accurate
+      if (removed.done) {
+        addExp(-50, `Removed "${removed.title}"`);
+      }
+      saveState();
+      showToast("Quest Removed", "🗑️");
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     // --- DAILY TRIAL ---
